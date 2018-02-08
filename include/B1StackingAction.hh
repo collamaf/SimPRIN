@@ -33,6 +33,7 @@
 
 #include "G4UserStackingAction.hh"
 #include "globals.hh"
+#include <vector>
 
 class B1EventAction;
 /// Stacking action class : manage the newly generated particles
@@ -52,6 +53,8 @@ public:
 private:
     B1RunAction* runStackAction;
     B1EventAction*  fEventAction;
+	std::vector<G4double> GammaStore;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

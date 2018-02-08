@@ -38,22 +38,16 @@
 class B1ActionInitialization : public G4VUserActionInitialization
 {
 public:
-	B1ActionInitialization(G4double, G4double, G4double, G4int, std::ofstream &, G4double/*, G4bool*/, G4int, G4int);
+	B1ActionInitialization(std::ofstream &);
 	virtual ~B1ActionInitialization();
 	
 	virtual void BuildForMaster() const;
 	virtual void Build() const;
 	
 protected:
-	G4double fX0Scan;
-	G4double fZValue;
-	G4double fCuDiam;
-	G4int fFilterFlag;
+
 	std::ofstream &FilePrimaries;
-	G4double fTBR;
-//	G4bool fSrSourceFlag;
-	G4int fSourceSelect;
-	G4int fSensorChoice;
+
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

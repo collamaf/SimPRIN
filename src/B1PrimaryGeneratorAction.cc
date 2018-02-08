@@ -64,53 +64,18 @@ using std::ios;
 using std::endl;
 
 
-B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1EventAction* eventAction, G4double TBR, G4int SourceSelect)
+B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1EventAction* eventAction)
 : G4VUserPrimaryGeneratorAction(),
 fParticleGun(0) ,
-evtPrimAction(eventAction), fTBR(TBR), fSourceSelect(SourceSelect)
+evtPrimAction(eventAction)
 
 {
 	G4int n_particle = 1;
 	fParticleGun  = new G4ParticleGun(n_particle);
-	G4bool fPointLike=true;
-	G4bool fExtended=false;
-	G4bool fSTB=false; 
-	
-	if (fSourceSelect==1) {  //pointlike Sr
-		fPointLike=true;
-		fExtended=false;
-		fSTB=false;
-	} else if (fSourceSelect==2) { //extended Sr
-		fPointLike=false;
-		fExtended=true;
-		fSTB=false;
-	} else if (fSourceSelect==3) { //DOTA Sr
-		fPointLike=false;
-		fExtended=false;
-		fSTB=true;
-	}
-	
-	if (fSTB) {
-	fRadiusInt=3*mm;
-	fDZInt=1*mm;
-	fRadiusExt=10.48*mm; //10.48 per Rosa, 6.65 per PG
-	fDZExt=4.4*mm;   //4.4 per Rosa, 5.5 per PG
-	} else if (fPointLike) {
-		fRadiusInt=0*mm;
-		fDZInt=0*mm;
-		fRadiusExt=0*mm;
-		fDZExt=0*mm;
-	} else if (fExtended) {
-		fRadiusInt=10.5*mm;  //8 for RM, 10.5mm PG source
-		fDZInt=0*mm;
-		fRadiusExt=10.5*mm;
-		fDZExt=0*mm;
-	}
-	
 	
 	ofstream SourceFile;
 	G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-	G4ParticleDefinition* particle = particleTable->FindParticle("geantino");
+	G4ParticleDefinition* particle = particleTable->FindParticle("proton");
 	
 	fParticleGun->SetParticleDefinition(particle);
 	
@@ -130,65 +95,18 @@ void B1PrimaryGeneratorAction::GeneratePrimaries (G4Event* anEvent)
 {
 	
 	//Stronzium
-	G4int Z = 38, A = 90;
-	if (fSourceSelect==3) Z=39; //If I need Y instead of Sr
-	G4double ionCharge   = 0.*eplus;
-	G4double excitEnergy = 0.*keV;
 	
-	G4ParticleDefinition* ion
-	= G4IonTable::GetIonTable()->GetIon(Z,A,excitEnergy);
-	fParticleGun->SetParticleDefinition(ion);
-	fParticleGun->SetParticleCharge(ionCharge);
 	
-	G4double VolA=CLHEP::pi*fDZExt*(fRadiusExt*fRadiusExt-fRadiusInt*fRadiusInt);
-	G4double VolB=CLHEP::pi*fRadiusInt*fRadiusInt*fDZInt;
-	G4double VolC=CLHEP::pi*fRadiusInt*fRadiusInt*(fDZExt-fDZInt);
-	G4double denominatore=VolA+VolB*fTBR+VolC;
-	G4double ProbA=VolA/denominatore;
-	G4double ProbB=VolB*fTBR/denominatore;
-	G4double ProbC=VolC/denominatore;
+	fParticleGun->SetParticleEnergy(100*MeV); //SetParticleEnergy uses kinetic energy
 	
-	G4double zSource=0;
-	G4double zSourceOffset=1e-6*mm; //to avoid generating particles at the very boundary of source!
-
-	if (fRadiusExt==fRadiusInt) { //se ho un solo raggio ignoro il TBR e faccio la pasticca di sorgente
-		fRadiusMax=fRadiusInt;
-		fRadiusMin=0*mm;
-		zSource = -zSourceOffset;
-	} else {
-		G4double random=G4UniformRand();
-		if (random<=ProbA) {  //faccio il cilindretto cavo esterno al centro (VolA)
-			fRadiusMax=fRadiusExt;
-			fRadiusMin=fRadiusInt;
-			fZ=fDZExt;
-			zSource = -G4UniformRand()*fZ-zSourceOffset;
-		} else if (random>ProbA && random<=ProbA+ProbB) {    //faccio il cilindretto attivo al centro (VolB) SEGNALE!!!!
-			fRadiusMax=fRadiusInt;
-			fRadiusMin=0*mm;
-			fZ=fDZInt;
-			zSource = -G4UniformRand()*fZ-zSourceOffset;
-		} else if (random>ProbA+ProbB) {     //faccio il cilindretto dietro a quello attivo al centro (VolC)
-			fRadiusMax=fRadiusInt;
-			fRadiusMin=0*mm;
-			fZ=fDZExt-fDZInt;
-			zSource = -G4UniformRand()*fZ-fDZInt-zSourceOffset;
-		}
-	}
-		
-	
-	fParticleGun->SetParticleEnergy(0*MeV); //SetParticleEnergy uses kinetic energy
-	
-	G4double rho = sqrt(fRadiusMin*fRadiusMin + G4UniformRand()*(fRadiusMax*fRadiusMax-fRadiusMin*fRadiusMin));   //fixed square problem by collamaf with internal radius!
-	G4double alpha = G4UniformRand()*CLHEP::pi*2.;
-
-	const G4ThreeVector position = G4ThreeVector(rho*cos(alpha), rho*sin(alpha), zSource);
 /*
 	evtPrimAction->SetSourceCosX(0);
 	evtPrimAction->SetSourceCosY(0);
 	evtPrimAction->SetSourceCosZ(0);
 */
-	G4ThreeVector momentumDirection = G4ThreeVector(0,0,0);
-	
+	G4ThreeVector momentumDirection = G4ThreeVector(0,0,1);
+	G4ThreeVector position = G4ThreeVector(0,0,-1e-5*cm);
+
 	fParticleGun->SetParticleMomentumDirection(momentumDirection);
 	fParticleGun->SetParticlePosition(position);
 
@@ -200,16 +118,6 @@ void B1PrimaryGeneratorAction::GeneratePrimaries (G4Event* anEvent)
 	
 	fParticleGun->GeneratePrimaryVertex(anEvent);
 	
-	if(anEvent->GetEventID()==1) {  //stampo informazioni sorgente
-		G4cout<<"Dimensioni sorgente: Raggio interno = "<<fRadiusInt<<", Raggio esterno = "<<fRadiusExt<<", H = "<<fZ<<G4endl;
-		if (fSourceSelect==3) { //solo se è la sorgente DOTA..
-			G4cout<<"TBR richiesto= "<<fTBR<<G4endl;
-			G4cout<<"VolA= "<<VolA<<", ProbA= "<<ProbA<<G4endl;
-			G4cout<<"VolB= "<<VolB<<", ProbB= "<<ProbB<<G4endl;
-			G4cout<<"VolC= "<<VolC<<", ProbC= "<<ProbC<<G4endl;
-			G4cout<<"Volume sorgente tot= "<<VolA+VolB+VolC<<G4endl;
-		}
-	}
 }
 
 

@@ -31,6 +31,7 @@
 #include "B1StackingAction.hh"
 #include "B1RunAction.hh"
 #include "B1EventAction.hh"
+#include "G4VProcess.hh"
 
 #include "G4Track.hh"
 #include "G4NeutrinoE.hh"
@@ -52,8 +53,26 @@ G4ClassificationOfNewTrack
 B1StackingAction::ClassifyNewTrack(const G4Track* track)
 {
 	G4int debug=0;
-	if (debug) G4cout<<"CMOSDEBUG PROVA STACKING creata nuova traccia tipo= "<< track->GetDynamicParticle() ->GetPDGcode()<<", MotherIsotope Val= "<< runStackAction->GetMotherIsotope()
-	<<G4endl;
+	
+	/*
+	 
+	 C11: 1000060110
+	 C12: 1000060120
+	 N12: 1000070120
+	 O16: 1000080160
+	 
+	 
+	 */
+	
+	const G4VProcess* creator=track->GetCreatorProcess();
+	std::string CreatorProcname="undefined";
+	if(creator) CreatorProcname=creator->GetProcessName();
+	
+	if (debug) {
+		G4cout<<"DEBUG PROVA STACKING creata nuova traccia tipo= "<< track->GetDynamicParticle() ->GetPDGcode()<<", MotherIsotope Val= "<< runStackAction->GetMotherIsotope();
+		if (creator) G4cout<<", MerdaProcess= "<<track->GetCreatorProcess()->GetProcessType();
+			G4cout<<G4endl;
+	}
 	//keep primary particle
 	//	if (track->GetParentID() == 0) return fUrgent;
 	//	if (track->GetParentID() == 1 && track->GetDynamicParticle() ->GetPDGcode()==11)		  G4cout<<"CMOSDEBUG PROVA STACKING elettrone! en= "<< track->GetKineticEnergy()/CLHEP::keV  <<G4endl;
@@ -61,10 +80,16 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
     
     fEventAction->ResetPassCounter(); //collamaf: at each new track we reset the pass counter
     
-	if (track->GetDynamicParticle() ->GetPDGcode()==11) { //if I generated an electron
-		if (debug) G4cout<<"CMOSDEBUG PROVA STACKING nuovo elettrone! en= "<< track->GetKineticEnergy()/CLHEP::keV  <<G4endl;
+	if (track->GetDynamicParticle() ->GetPDGcode()==22) { //if I generated a gamma
+		
+		if (CreatorProcname=="protonInelastic") {
+			GammaStore.push_back(track->GetKineticEnergy()/CLHEP::MeV);
+			if (debug)  G4cout<<"DEBUG butto nel vettore!"<<G4endl;
+		}
+		
+		if (debug) G4cout<<"DEBUG PROVA STACKING nuovo fotone! en= "<< track->GetKineticEnergy()/CLHEP::keV  <<G4endl;
 		if (track->GetParentID() == 1) { //figlio di Sr
-			if (debug) G4cout<<"CMOSDEBUG Sr Setto il MotherIsotope a 0"<<G4endl;
+			if (debug) G4cout<<"DEBUG Sr Setto il MotherIsotope a 0"<<G4endl;
 			runStackAction->SetMotherIsotope(0);
 			(runStackAction->GetRunEnGen()).push_back(track->GetKineticEnergy()/CLHEP::keV);
 			(runStackAction->GetRunIsotopeGen()).push_back(0);
@@ -72,7 +97,7 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 			(runStackAction->GetRunCosY()).push_back(track->GetMomentumDirection().y());
 			(runStackAction->GetRunCosZ()).push_back(track->GetMomentumDirection().z());
 		} else if (track->GetParentID() == 2) {  //figlio di Y
-			if (debug) G4cout<<"CMOSDEBUG Y Setto il MotherIsotope a 1"<<G4endl;
+			if (debug) G4cout<<"DEBUG Y Setto il MotherIsotope a 1"<<G4endl;
 			runStackAction->SetMotherIsotope(1);
 			(runStackAction->GetRunEnGen()).push_back(track->GetKineticEnergy()/CLHEP::keV);
 			(runStackAction->GetRunIsotopeGen()).push_back(1);
@@ -82,7 +107,18 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 		}
 	}
 	
-	
+	if (track->GetDynamicParticle() ->GetPDGcode()>10000) {
+		
+		if (CreatorProcname=="protonInelastic") {
+			if (debug) G4cout<<"DEBUG vuoto il vettore! Figlio di "<< track->GetDynamicParticle() ->GetPDGcode() <<G4endl;
+			for (size_t aa=0; aa<GammaStore.size(); aa++) {
+				if (debug) G4cout<<GammaStore.at(aa)<<G4endl;
+				runStackAction->AddExitGammaEne(GammaStore.at(aa));
+				runStackAction->AddExitGammaMother(track->GetDynamicParticle() ->GetPDGcode() );
+			}
+			GammaStore.clear();
+		}
+	}
 	
 	return fUrgent;
 }

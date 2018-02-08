@@ -51,7 +51,7 @@ class B1PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
 //    B1PrimaryGeneratorAction(B1EventAction* eventAction);
-	B1PrimaryGeneratorAction(B1EventAction* eventAction, G4double TBR=1, G4int SourceSelect=1);
+	B1PrimaryGeneratorAction(B1EventAction* eventAction);
     virtual ~B1PrimaryGeneratorAction();
 
     // method from the base class
@@ -61,27 +61,14 @@ class B1PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
 	
 	G4double BetaDecaySpectrum(G4double Ek, G4double EndPoint);
-	
-	inline void SetRadius(const double Radius){fRadiusMax=Radius;};
-	inline void SetZ(const double Z){fZ=Z;};
-	
+		
   private:
     G4ParticleGun*  fParticleGun; // pointer a to G4 gun class
 	B1EventAction* evtPrimAction;
 //	G4Tubs * fSourceVol;
 	
-	G4double fZ;
 
-	G4double fRadiusExt;
-	G4double fRadiusInt;
-	G4double fDZExt;
-	G4double fDZInt;
 	
-	G4double fRadiusMax;
-	G4double fRadiusMin;
-	G4double fTBR;
-//	G4double fRatio;
-	G4int fSourceSelect;
 
 	//	G4LogicalVolume* sourceLV;
 //	G4VPhysicalVolume* sourcePV;

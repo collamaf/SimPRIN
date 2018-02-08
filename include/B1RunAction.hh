@@ -49,7 +49,7 @@ class G4Run;
 class B1RunAction : public G4UserRunAction
 {
 public:
-	B1RunAction(G4double, G4double, G4double, G4int, G4double, G4int, G4int);
+	B1RunAction();
 	virtual ~B1RunAction();
 	
 	// virtual G4Run* GenerateRun();
@@ -95,6 +95,12 @@ public:
 //	std::vector<G4double>& GetRunPixEneDep() {return RunVectorPixEneDep; }
 	std::vector<G4double>& GetRunPixXpos() {return RunVectorPixXpos; }
 	std::vector<G4double>& GetRunPixYpos() {return RunVectorPixYpos; }
+
+	std::vector<G4double>& GetRunExitGammaEne() {return RunExitGammaEne; }
+	std::vector<G4int>& GetRunExitGammaMother() {return RunExitGammaMother; }
+
+	void AddExitGammaEne(G4double ene) { RunExitGammaEne.push_back(ene); }
+	void AddExitGammaMother(G4int part) { RunExitGammaMother.push_back(part); }
 	
 	G4int GetEventNumber() {return nbEventInRun;}
 	
@@ -113,15 +119,10 @@ private:
 	G4Accumulable<G4double> fEdep;
 	G4Accumulable<G4double> fEdep2;
 	G4Accumulable <G4double> fEdkin;
+
 	
-	G4double fX0Scan;
-	G4double fZValue;
-	G4double fCuDiam;
-	G4int fFilterFlag;
 	G4int nbEventInRun;
-	G4double fTBR;
-	G4int fSourceSelect;
-	
+
 	G4int fMotherIsotope=-10;
 	G4int fSensorChoice;
 
@@ -171,6 +172,10 @@ private:
 	std::vector<G4int> RunExitProcess;
 	
 	std::vector<G4double> RunVectorEAbsComp;
+	
+	
+	std::vector<G4double> RunExitGammaEne;
+	std::vector<G4int> RunExitGammaMother;
 	/*
 	 std::vector<G4double> RunVectorSourceX;
 	 std::vector<G4double> RunVectorSourceY;

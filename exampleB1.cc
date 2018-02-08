@@ -39,7 +39,7 @@
 #endif
 
 #include "G4UImanager.hh"
-//#include "QBBC.hh"
+#include "QBBC.hh"
 #include "B1PhysicsList.hh"
 
 #include "G4SystemOfUnits.hh"
@@ -62,52 +62,16 @@ int main(int argc,char** argv)
 	
 	// Detect interactive mode (if no arguments) and define UI session
 	G4UIExecutive* ui = 0;
-	if ( argc == 8 ) {  //was argc==1, 7 to see geom using input parameters, 8 once added sensorchoice
+	if ( argc == 1 ) {
 		ui = new G4UIExecutive(argc, argv);
 	}
 	
-	G4double x0Scan=0, ZValue=2*mm, CuDiam=5*mm, TBRvalue=1;
-	G4int FilterFlag=1, SourceChoice=1, SrSourceFlag=0, SensorChoice=1;
-	
-	//arguments list: CuZ, Zval, Filter, TBR, Source, X0, Sensor
-	
-	if ( argc >1 ) {
-		//    x0Scan=(*argv[2]-48)*mm;
-		CuDiam=strtod (argv[1], NULL);
-		ZValue=strtod (argv[2], NULL);
-		FilterFlag=strtod (argv[3], NULL);
-		TBRvalue=strtod (argv[4],NULL);
-		SourceChoice=strtod (argv[5], NULL);
-		x0Scan=strtod (argv[6], NULL);
-		SensorChoice=strtod(argv[7],NULL);
-		
-		G4cout<<"DEBUG Initial parameter check x0= "<<x0Scan<<G4endl;
-		G4cout<<"DEBUG Initial parameter check z= "<<ZValue<<G4endl;
-		G4cout<<"DEBUG Initial parameter check CuDiam= "<<CuDiam<<G4endl;
-		G4cout<<"DEBUG Initial parameter check TBRvalue= "<<TBRvalue<<G4endl;
-		G4cout<<"DEBUG Initial parameter check FilterFlag= "<<FilterFlag<<G4endl;
-		G4cout<<"DEBUG Initial parameter check SourceChoice= "<<SourceChoice<<G4endl;
-		G4cout<<"DEBUG Initial parameter check SensorChoice= "<<SensorChoice<<G4endl;
-		
-	}
-	
-	G4int SourceSelect=SourceChoice;
-	if (SourceSelect==1|| SourceSelect==2) SrSourceFlag=1; //if it is a Sr source... tell to DetCons
 	
 	G4String FileNamePrim;
 	
-	if (CuDiam>=0){
-		FileNamePrim="PrimariesX" + std::to_string((G4int)x0Scan) + "_Z" + std::to_string((G4int)ZValue) + "_CuD" + std::to_string((G4int)CuDiam) + "_Fil" + std::to_string((G4int)FilterFlag)  + "_TBR" + std::to_string((G4int)(10*TBRvalue))  ;
-	}
-	else	{
-		FileNamePrim="PrimariesX" + std::to_string((G4int)x0Scan) + "_Z" + std::to_string((G4int)ZValue) + "_NoCuD"  + "_Fil" + std::to_string((G4int)FilterFlag)  + "_TBR" + std::to_string((G4int)(10*TBRvalue))  ;
-	}
 	
+		FileNamePrim="PrimariesPRIN";
 	
-	if (SrSourceFlag) FileNamePrim.append("_Sr");
-	
-	if (SensorChoice==1) FileNamePrim.append("_011");
-	if (SensorChoice==2) FileNamePrim.append("_115");
 	
 	FileNamePrim.append(+ ".dat");
 	std::ofstream primFile(FileNamePrim, std::ios::out);
@@ -123,23 +87,25 @@ int main(int argc,char** argv)
 	G4RunManager* runManager = new G4RunManager;
 	//#endif
 	
+	// Physics list
+	G4VModularPhysicsList* physicsList = new QBBC;
+	physicsList->SetVerboseLevel(1);
+	runManager->SetUserInitialization(physicsList);
 	// Set mandatory initialization classes
 	// Detector construction
-	runManager->SetUserInitialization(new B1DetectorConstruction(x0Scan, ZValue, CuDiam, FilterFlag, SrSourceFlag, SensorChoice)); //DetectorConstruction needs to know if it is a SrSource to place the right geometry
+	runManager->SetUserInitialization(new B1DetectorConstruction()); //DetectorConstruction needs to know if it is a SrSource to place the right geometry
 	
-	// Physics list
-	//G4VModularPhysicsList* physicsList = new QBBC;
-	//physicsList->SetVerboseLevel(1);
+
 	
 	//  runManager->SetUserInitialization(new B1PhysicsList);
 	
-	B1PhysicsList* physicsList=new B1PhysicsList;
-	physicsList->RegisterPhysics(new G4StepLimiterPhysics());
-	runManager->SetUserInitialization(physicsList);
+	//B1PhysicsList* physicsList=new B1PhysicsList;
+//	physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+	//runManager->SetUserInitialization(physicsList);
 	
 	// User action initialization
 	//	runManager->SetUserInitialization(new B1ActionInitialization(x0Scan, ZValue, CuDiam, FilterFlag, primFile, TBRvalue,SourceSelect, SourceSelect));
-	runManager->SetUserInitialization(new B1ActionInitialization(x0Scan, ZValue, CuDiam, FilterFlag, primFile, TBRvalue, SourceSelect, SensorChoice));
+	runManager->SetUserInitialization(new B1ActionInitialization(primFile));
 	
 	// Initialize visualization
 	//
@@ -157,7 +123,7 @@ int main(int argc,char** argv)
 	if ( ! ui ) {
 		// batch mode
 		G4String command = "/control/execute ";
-		G4String fileName = argv[8];
+		G4String fileName = argv[1];
 		UImanager->ApplyCommand(command+fileName);
 	}
 	else {

@@ -37,8 +37,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1ActionInitialization::B1ActionInitialization(G4double x0, G4double ZValue, G4double CuDiam, G4int FilterFlag, std::ofstream& file, G4double TBR/*, G4bool SrSourceFlag*/, G4int SourceSelect, G4int SensorChoice)
-  : G4VUserActionInitialization(), fX0Scan(x0), fZValue(ZValue), fCuDiam(CuDiam), fFilterFlag(FilterFlag), FilePrimaries(file), fTBR(TBR), /*fSrSourceFlag(SrSourceFlag),*/ 	fSourceSelect(SourceSelect), fSensorChoice(SensorChoice)
+B1ActionInitialization::B1ActionInitialization(std::ofstream& file)
+  : G4VUserActionInitialization(),  FilePrimaries(file)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -50,7 +50,7 @@ B1ActionInitialization::~B1ActionInitialization()
 
 void B1ActionInitialization::BuildForMaster() const
 {
-  B1RunAction* runAction = new B1RunAction(fX0Scan, fZValue, fCuDiam, fFilterFlag, fTBR, fSourceSelect, fSensorChoice);
+  B1RunAction* runAction = new B1RunAction();
   SetUserAction(runAction);
 }
 
@@ -59,18 +59,17 @@ void B1ActionInitialization::BuildForMaster() const
 void B1ActionInitialization::Build() const
 {
 //  SetUserAction(new B1PrimaryGeneratorAction(runAction));
-	G4cout<<"PROVA Action Init "<<fX0Scan<<G4endl;
 
-  B1RunAction* runAction = new B1RunAction(fX0Scan, fZValue, fCuDiam, fFilterFlag, fTBR, fSourceSelect, fSensorChoice);
+  B1RunAction* runAction = new B1RunAction();
   SetUserAction(runAction);
   
   B1EventAction* eventAction = new B1EventAction(runAction, FilePrimaries);
   SetUserAction(eventAction);
 	
-  SetUserAction(new B1SteppingAction(eventAction, runAction, fCuDiam));
+  SetUserAction(new B1SteppingAction(eventAction, runAction));
 	
 //	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction, TRUE, fSrSourceFlag, TRUE, fTBR, fSrSourceFlag); // Y, Sr, PrintDist, TBR sorge
-	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction,  fTBR, fSourceSelect);
+	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction);
 	SetUserAction(primAction);
 	SetUserAction(new B1StackingAction(runAction, eventAction));
 }  

@@ -33,6 +33,7 @@
 #include "G4DecayPhysics.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4EmStandardPhysics.hh"
+#include "G4EmStandardPhysics_option3.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4RegionStore.hh"
 
@@ -51,6 +52,9 @@ B1PhysicsList::B1PhysicsList()
 
   // EM physics
   RegisterPhysics(new G4EmStandardPhysics());
+
+	RegisterPhysics(new G4EmStandardPhysics_option3());
+	
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -85,12 +89,13 @@ void B1PhysicsList::SetCuts()
 	G4ProductionCuts* cutsCMOS = new G4ProductionCuts;
 	cutsCMOS->SetProductionCut(0.001*mm);
 	
+	/*
 	G4RegionStore::GetInstance()->GetRegion("ABSRegion")->SetProductionCuts(cuts);
 	G4RegionStore::GetInstance()->GetRegion("CMOSReg")->SetProductionCuts(cutsCMOS);
 	G4RegionStore::GetInstance()->GetRegion("SourceReg")->SetProductionCuts(cuts);
 	G4RegionStore::GetInstance()->GetRegion("ResinReg")->SetProductionCuts(cuts);
 	G4RegionStore::GetInstance()->GetRegion("CarrierReg")->SetProductionCuts(cuts);
-	
+	*/
 /*
 	
 	regName = "CMOSReg";

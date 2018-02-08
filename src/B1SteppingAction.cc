@@ -46,12 +46,11 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1SteppingAction::B1SteppingAction(B1EventAction* eventAction, B1RunAction* runAction, G4double CuDiam)
+B1SteppingAction::B1SteppingAction(B1EventAction* eventAction, B1RunAction* runAction)
 : G4UserSteppingAction(),
 fEventAction(eventAction),
 fScoringVolume(0),
-runStepAction(runAction),
-fCuDiam(CuDiam)
+runStepAction(runAction)
 {}
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -65,62 +64,32 @@ B1SteppingAction::~B1SteppingAction()
 void B1SteppingAction::UserSteppingAction(const G4Step* step)
 {
 	
+
 	G4VPhysicalVolume* ThisVol = step->GetPreStepPoint()->GetTouchableHandle()->GetVolume();
 	G4VPhysicalVolume* NextVol = step->GetPostStepPoint()->GetTouchableHandle()->GetVolume();
 	
-	//	if((NextVol && ThisVol->GetName()=="Resin" && NextVol->GetName()=="CMOS")|| (NextVol && ThisVol->GetName()=="World" && NextVol->GetName()=="CMOS")) { //what enters CMOS
-	if((NextVol && ThisVol->GetName()=="Resin" && NextVol->GetName()=="CMOS")|| (NextVol && ThisVol->GetName()!="CMOS" && NextVol->GetName()=="CMOS")) { //what enters CMOS
-		
-
-		G4double edepKin = step->GetPostStepPoint()->GetKineticEnergy();
-		//Fill vector
-		(runStepAction->GetRunEnPre()).push_back(edepKin/keV);
-		fEventAction->AddNoPre(1);
-		(runStepAction->GetRunPart()).push_back(step->GetTrack()->GetDynamicParticle() ->GetPDGcode());
-		fEventAction->AddEdkin(edepKin);
-	}
+	if (0 &&step->GetTrack()->GetCreatorProcess()) G4cout<<"MERDA "<<step->GetTrack()->GetCreatorProcess()->GetProcessType()<<G4endl;
 	
-
-	//Modified on 2017-11-17 by collamaf: now the condition works for both cases: with or without Cu collimator.
-	//If there is not collimator save what goes from source to dummy. If there is a collimator save what goes from world (the hole) into dummy
-
-	if( NextVol && ( (fCuDiam<0 &&  ( (ThisVol->GetName()=="SourceSR" && NextVol->GetName()=="Dummy") || (ThisVol->GetName()=="SourceDOTA" && NextVol->GetName()=="Dummy"))) || ( (fCuDiam>=0 &&   (ThisVol->GetName()=="World" && NextVol->GetName()=="Dummy") ) )) ) { //what actually exits the source
-		
-        //collamaf: to avoid double counting same track going back and forth, check if I already counted it
-		if (fEventAction->GetStoreTrackID()==step->GetTrack()->GetTrackID()) { //if I already saw this track exiting the source...
-			fEventAction->AddPassCounter(1);  //increase the counter
-            
-//			G4cout<<"CMOSDEBUG CONTROLLA "<<fEventAction->GetStoreTrackID()<<", PassCounter= "<<fEventAction->GetPassCounter()<<G4endl;
-        }else {
-            fEventAction->SetStoreTrackID(step->GetTrack()->GetTrackID());
-//            G4cout<<"CMOSDEBUG PRIMO PASSAGGIO!! "<<fEventAction->GetStoreTrackID()<<", PassCounter= "<<fEventAction->GetPassCounter()<<G4endl;
-//            if (fEventAction->GetPassCounter()!=0) G4cout<<"MERDAAAAA Primo passaggio di"<<fEventAction->GetStoreTrackID()<<" ma con PassCounter= "<<fEventAction->GetPassCounter()<<G4endl;
-        }
-		
-		//		if (fEventAction->GetNSourceExit()>1) 	G4cout<<"CMOSDEBUG CONTROLLA"<<fEventAction->GetNSourceExit()<<G4endl;
-		if (fEventAction->GetPassCounter()==0) {
+	if( NextVol && ThisVol->GetName()=="Absorber" && NextVol->GetName()=="World" ) { //what actually exits the Absorber
 			fEventAction->AddNSourceExit(1);
-			(runStepAction->GetRunEnExit()).push_back(step->GetPostStepPoint()->GetKineticEnergy()/keV);
+		
+			(runStepAction->GetRunEnExit()).push_back(step->GetPostStepPoint()->GetKineticEnergy()/MeV);
 			(runStepAction->GetRunXExit()).push_back(step->GetPostStepPoint()->GetPosition().x()/mm);
 			(runStepAction->GetRunYExit()).push_back(step->GetPostStepPoint()->GetPosition().y()/mm);
 			(runStepAction->GetRunZExit()).push_back(step->GetPostStepPoint()->GetPosition().z()/mm);
 			(runStepAction->GetRunCosXExit()).push_back(step->GetPreStepPoint()->GetMomentumDirection().x());
 			(runStepAction->GetRunCosYExit()).push_back(step->GetPreStepPoint()->GetMomentumDirection().y());
+		
 			(runStepAction->GetRunCosZExit()).push_back(step->GetPreStepPoint()->GetMomentumDirection().z());
 			(runStepAction->GetRunPartExit()).push_back(step->GetTrack()->GetDynamicParticle() ->GetPDGcode());
+		
 			(runStepAction->GetRunParentIDExit()).push_back(step->GetTrack()->GetParentID());
-			(runStepAction->GetRunExitProcess().push_back((step->GetTrack()->GetCreatorProcess()->GetProcessType())));
-		}
 		
-		/*
-		 We have to use PreStepPoint to save the exit cosines, otherwise we already have particles flipped..
-		 */
+//			(runStepAction->GetRunExitProcess().push_back((step->GetTrack()->GetCreatorProcess()->GetProcessType())));
+		/**/
 		
-//		if (0&&step->GetPostStepPoint()->GetMomentumDirection().z()<0) G4cout<<"CMOSDEBUG COSZ NEGATIVO! pre "<< step->GetPreStepPoint()->GetMomentumDirection().z()<<", post "<< step->GetPostStepPoint()->GetMomentumDirection().z()<<G4endl;
-		//		G4cout<<"debug! Nome: "<<step->GetTrack()->GetCreatorProcess()->GetProcessName()<<
-		//	", Type= "<<  step->GetTrack()->GetCreatorProcess()->GetProcessType() <<", Sub Type= "<<  step->GetTrack()->GetCreatorProcess()->GetProcessSubType() <<G4endl;
 	}
-	
+#if 0
 	if (!fScoringVolume) {
 		const B1DetectorConstruction* detectorConstruction
 		= static_cast<const B1DetectorConstruction*>
@@ -128,14 +97,11 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 		fScoringVolume = detectorConstruction->GetScoringVolume();
 	}
 	
-	if (0 && runStepAction->GetMotherIsotope() != 0 && runStepAction->GetMotherIsotope() !=1) G4cout<<"CMOSDEBUG PROVA STEPPING  MotherIsotope Val= "<< runStepAction->GetMotherIsotope()
-	<<G4endl;
-	
 	// get volume of the current step
 	G4LogicalVolume* volume
 	= step->GetPreStepPoint()->GetTouchableHandle()
 	->GetVolume()->GetLogicalVolume();
-	
+
 	// check if we are in scoring volume
 	if (volume== fScoringVolume) {
 		//pixel information collection
@@ -180,6 +146,7 @@ void B1SteppingAction::UserSteppingAction(const G4Step* step)
 		
 		fEventAction->AddEdep(edepStep);
 	}
+#endif
 }
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 

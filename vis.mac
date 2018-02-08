@@ -53,7 +53,7 @@
 #
 # To draw only gammas:
 #/vis/filtering/trajectories/create/particleFilter
-#/vis/filtering/trajectories/particleFilter-0/add gamma
+#/vis/filtering/trajectories/particleFilter-0/add proton
 #
 # To invert the above, drawing all particles except gammas,
 # keep the above two lines but also add:
@@ -108,12 +108,7 @@
 /vis/viewer/set/hiddenMarker true
 #/vis/viewer/set/viewpointThetaPhi 120 150
 /vis/viewer/set/viewpointThetaPhi 90 0
-/vis/geometry/set/colour SourceDOTA 0 1 0 0 1
-/vis/geometry/set/colour SourceSR 0 0 1  0 1
-/vis/geometry/set/colour ABSbehind 0 0 0 1 1
-/vis/geometry/set/colour ABSaround 0 0 0 1 1
-/vis/geometry/set/colour Carrier 0 1 1 1 0.05
-/vis/geometry/set/colour CuCollimator 0 1 0.57 0.3 1
+
 #/vis/geometry/set/colour [logic name] depth R G B opacity
 #
 # Re-establish auto refreshing and verbosity:

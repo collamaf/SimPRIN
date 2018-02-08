@@ -113,7 +113,9 @@ void B1EventAction::BeginOfEventAction(const G4Event* )
 	
 	(fRunAction->GetRunEAbsComp()).clear();
 	
-	
+	(fRunAction->GetRunExitGammaEne()).clear();
+	(fRunAction->GetRunExitGammaMother()).clear();
+
 	//	}
 	fno=0;
 	fPreNo=0;

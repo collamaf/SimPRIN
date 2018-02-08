@@ -48,18 +48,12 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1RunAction::B1RunAction(G4double x0, G4double ZValue, G4double CuDiam, G4int FilterFlag, G4double TBR, G4int SourceSelect, G4int SensorChoice)
+B1RunAction::B1RunAction()
 : G4UserRunAction(),
 fEdep("Edep", 0.),
 fEdep2("Edep2", 0.),
 fEdkin("Edkin", 0.)
-, fX0Scan(x0)
-, fZValue(ZValue)
-, fCuDiam(CuDiam)
-, fFilterFlag(FilterFlag)
-, fTBR(TBR)
-, fSourceSelect(SourceSelect)
-, fSensorChoice(SensorChoice)
+
 
 {
 	// Register accumulable to the accumulable manager
@@ -103,6 +97,7 @@ void B1RunAction::BeginOfRunAction(const G4Run* run)
 
 void B1RunAction::EndOfRunAction(const G4Run* run)
 {
+
 	G4int nofEvents = run->GetNumberOfEvent();
 	if (nofEvents == 0) return;
 	
@@ -121,13 +116,14 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
 	G4double rms = edep2 - edep*edep/nofEvents;
 	if (rms > 0.) rms = std::sqrt(rms); else rms = 0.;
 	
+
 	const B1DetectorConstruction* detectorConstruction
 	= static_cast<const B1DetectorConstruction*>
 	(G4RunManager::GetRunManager()->GetUserDetectorConstruction());
-	G4double mass = detectorConstruction->GetScoringVolume()->GetMass();
+	G4double mass = 1;
 	G4double dose = edep/mass;
 	G4double rmsDose = rms/mass;
-	
+#if 1
 	// Run conditions
 	//  note: There is no primary generator action object for "master"
 	//        run manager for multi-threaded mode.
@@ -171,10 +167,12 @@ void B1RunAction::EndOfRunAction(const G4Run* run)
 	<< G4endl
 	<< G4endl;
 	
+	
 	///////////////
 	// Write Histo
 	//
 	WriteHistogram();
+#endif
 	
 }
 
@@ -204,22 +202,12 @@ void B1RunAction::CreateHistogram()
 	analysisManager->SetVerboseLevel(1);
 	
 	// Open an output file
-	G4String fileNameBase = "CMOSmc";
+	G4String fileNameBase = "PRINmc";
 	G4String fileName;
 	
-	if (fCuDiam>=0){
-		fileName= fileNameBase + "X"+  std::to_string((G4int)fX0Scan) + "_Z" + std::to_string((G4int)fZValue) + "_CuD" + std::to_string((G4int)fCuDiam) + "_Fil" + std::to_string((G4int)fFilterFlag) + "_TBR" + std::to_string((G4int)(10*fTBR));
-	}
-	else {
-		fileName= fileNameBase + "X"+  std::to_string((G4int)fX0Scan) + "_Z" + std::to_string((G4int)fZValue) + "_NOCuD" + "_Fil" + std::to_string((G4int)fFilterFlag) + "_TBR" + std::to_string((G4int)(10*fTBR));
-	}
 	
-	if (fSourceSelect==1) fileName.append("_PSr");
-	if (fSourceSelect==2) fileName.append("_ExtSr");
-	if (fSourceSelect==3) fileName.append("_ExtY");
-	if (fSensorChoice==1) fileName.append("_011");
-	if (fSensorChoice==2) fileName.append("_115");
-
+		fileName= fileNameBase;
+	
 	analysisManager->OpenFile(fileName);
 
 	// Creating ntuple
@@ -292,6 +280,9 @@ void B1RunAction::CreateHistogram()
 	analysisManager->CreateNtupleDColumn(1,"ExitParentID", RunVectorParentIDExit);                           //16
 	analysisManager->CreateNtupleIColumn(1,"ExitProcess", RunExitProcess); //17
 	analysisManager->CreateNtupleDColumn(1,"ExitTrackN"); //18
+	analysisManager->CreateNtupleDColumn(1,"ExitGammasEne", RunExitGammaEne); //19
+	analysisManager->CreateNtupleIColumn(1,"ExitGammasMother", RunExitGammaMother); //20
+
 	//	analysisManager->CreateNtupleDColumn(1,"ExitProcess", RunVectorParentIDExit); //16
 
 	analysisManager->FinishNtuple(0);
