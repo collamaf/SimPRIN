@@ -51,7 +51,7 @@ class B1PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 {
   public:
 //    B1PrimaryGeneratorAction(B1EventAction* eventAction);
-	B1PrimaryGeneratorAction(B1EventAction* eventAction);
+	B1PrimaryGeneratorAction(B1EventAction* eventAction, G4bool);
     virtual ~B1PrimaryGeneratorAction();
 
     // method from the base class
@@ -65,6 +65,7 @@ class B1PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
   private:
     G4ParticleGun*  fParticleGun; // pointer a to G4 gun class
 	B1EventAction* evtPrimAction;
+	G4bool fRealBeamFlag;
 //	G4Tubs * fSourceVol;
 	
 

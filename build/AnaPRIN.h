@@ -45,7 +45,8 @@ class AnaPRIN {
 	Double_t        ExitTrackN;
 	vector<double>  *ExitGammasEne;
 	vector<int>     *ExitGammasMother;
-	
+	vector<int>     *ExitGammasOriginVolume;
+
 	
 	
 	
@@ -71,7 +72,8 @@ class AnaPRIN {
 	TBranch        *b_ExitTrackN;   //!
 	TBranch        *b_ExitGammasEne;   //!
 	TBranch        *b_ExitGammasMother;   //!
-	
+	TBranch        *b_ExitGammasOriginVolume;   //!
+
 	//   AnaPRIN(TTree *tree=0);
 	AnaPRIN(TString filename);
 	TString nomefile;
@@ -84,6 +86,7 @@ class AnaPRIN {
 	virtual void     Loop();
 	virtual Bool_t   Notify();
 	virtual void     Show(Long64_t entry = -1);
+	virtual void SpacchettaIsotopo (int isotope, int* Z , int*A);
 	TFile* outfile;
 };
 
@@ -160,6 +163,8 @@ void AnaPRIN::Init(TTree *tree)
 	ExitProcess = 0;
 	ExitGammasEne = 0;
 	ExitGammasMother = 0;
+	ExitGammasOriginVolume = 0;
+
 	// Set branch addresses and branch pointers
 	if (!tree) return;
 	fChain = tree;
@@ -187,6 +192,7 @@ void AnaPRIN::Init(TTree *tree)
 	fChain->SetBranchAddress("ExitTrackN", &ExitTrackN, &b_ExitTrackN);
 	fChain->SetBranchAddress("ExitGammasEne", &ExitGammasEne, &b_ExitGammasEne);
 	fChain->SetBranchAddress("ExitGammasMother", &ExitGammasMother, &b_ExitGammasMother);
+	fChain->SetBranchAddress("ExitGammasOriginVolume", &ExitGammasOriginVolume, &b_ExitGammasOriginVolume);
 	Notify();
 }
 
@@ -215,4 +221,22 @@ Int_t AnaPRIN::Cut(Long64_t entry)
 	// returns -1 otherwise.
 	return 1;
 }
+
+
+
+void AnaPRIN::SpacchettaIsotopo(int isotope, int* Z, int* A) {
+	
+	*Z=(isotope%10000000)/10000;
+	*A=(isotope /10)%100;
+	
+	
+	
+	return;
+}
+
+
+
+
+
+
 #endif // #ifdef AnaPRIN_cxx

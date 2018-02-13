@@ -89,10 +89,14 @@ void B1EventAction::BeginOfEventAction(const G4Event* )
 //	(fRunAction->GetRunPixEneDep()).clear();
 	(fRunAction->GetRunPixXpos()).clear();
 	(fRunAction->GetRunPixYpos()).clear();
-	
+
+	(fRunAction->GetRunX()).clear();
+	(fRunAction->GetRunY()).clear();
+	(fRunAction->GetRunZ()).clear();
 	(fRunAction->GetRunCosX()).clear();
 	(fRunAction->GetRunCosY()).clear();
 	(fRunAction->GetRunCosZ()).clear();
+	(fRunAction->GetRunVolume()).clear();
 
 	(fRunAction->GetRunEnGen()).clear();
 	(fRunAction->GetRunIsotopeGen()).clear();
@@ -180,10 +184,10 @@ void B1EventAction::EndOfEventAction(const G4Event* evento)
 	
 	if(fEdep>0) analysisManager->AddNtupleRow(0);
 	
-	if(evento->GetEventID()<=1e6){ //to write to proper ntuple all the source particles info
-		analysisManager->FillNtupleDColumn(1,0, fSourceX/mm);
-		analysisManager->FillNtupleDColumn(1,1, fSourceY/mm);
-		analysisManager->FillNtupleDColumn(1,2, fSourceZ/mm);
+	if(1/*evento->GetEventID()<=1e6*/){ //to write to proper ntuple all the source particles info
+//		analysisManager->FillNtupleDColumn(1,0, fSourceX/mm);
+//		analysisManager->FillNtupleDColumn(1,1, fSourceY/mm);
+//		analysisManager->FillNtupleDColumn(1,2, fSourceZ/mm);
 //		analysisManager->FillNtupleDColumn(1,3, fSourceCosX/mm);
 //		analysisManager->FillNtupleDColumn(1,4, fSourceCosY/mm);
 //		analysisManager->FillNtupleDColumn(1,5, fSourceCosZ/mm);

@@ -50,7 +50,6 @@
 #include "B1RunAction.hh"
 #include "B1Analysis.hh"
 
-
 #include "G4Event.hh"
 
 #include <iostream>
@@ -64,10 +63,11 @@ using std::ios;
 using std::endl;
 
 
-B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1EventAction* eventAction)
+B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1EventAction* eventAction, G4bool RealBeamFlag)
 : G4VUserPrimaryGeneratorAction(),
 fParticleGun(0) ,
-evtPrimAction(eventAction)
+evtPrimAction(eventAction),
+fRealBeamFlag(RealBeamFlag)
 
 {
 	G4int n_particle = 1;
@@ -105,7 +105,27 @@ void B1PrimaryGeneratorAction::GeneratePrimaries (G4Event* anEvent)
 	evtPrimAction->SetSourceCosZ(0);
 */
 	G4ThreeVector momentumDirection = G4ThreeVector(0,0,1);
-	G4ThreeVector position = G4ThreeVector(0,0,-1e-5*cm);
+	
+	
+	
+	G4double x0,y0;
+	//  G4double cut = 2.*mm; // collimator dimension
+	G4double sizeX = 10*mm/2.;
+	G4double sizeY = 10*mm/2.;
+	if (!fRealBeamFlag) {
+		sizeX=0*mm;
+		sizeY=0*mm;
+	}
+	//-- Gaussian shoot
+	//   --------------
+	//  while (1>0){ //
+	x0 = G4RandGauss::shoot(0.,sizeX);
+	y0 = G4RandGauss::shoot(0.,sizeY);
+	//    if ( abs(x0)<cut && abs(y0)<cut ) break;
+	//    }
+	G4ThreeVector position = G4ThreeVector(x0,y0,-1e-5*cm);
+
+	
 
 	fParticleGun->SetParticleMomentumDirection(momentumDirection);
 	fParticleGun->SetParticlePosition(position);

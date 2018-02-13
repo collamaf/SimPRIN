@@ -47,12 +47,15 @@
 #include "G4StepLimiter.hh"
 #include "G4UserLimits.hh"
 #include "G4Region.hh"
+#include "G4Orb.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1DetectorConstruction::B1DetectorConstruction()
+B1DetectorConstruction::B1DetectorConstruction(G4bool TumorFlag, G4double FluorFraction)
 : G4VUserDetectorConstruction(),
-fScoringVolume(0)
+fScoringVolume(0),
+fTumorFlag(TumorFlag),
+fFluorFraction(FluorFraction)
 
 { }
 
@@ -78,6 +81,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	G4double world_sizeXY = 0.2*m;
 	G4double world_sizeZ  = 0.2*m;
 	G4Material* world_mat = nist->FindOrBuildMaterial("G4_AIR");
+//	G4Material* piombo = nist->FindOrBuildMaterial("G4_Pb");
+//	G4Material* vuoto = nist->FindOrBuildMaterial("G4_Galactic");
+
 	//	G4Material* world_mat = nist->FindOrBuildMaterial("G4_Galactic");
 	
 	G4Box* solidWorld =
@@ -119,6 +125,9 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	G4Element* elN = new G4Element (name="Nitrogen", symbol="N", z=7.,a );
 	a = 19.00*g/mole;
 	G4Element* elF19 = new G4Element (name="Fluorine19", symbol="F19", z=9.,a );
+	a = 40.00*g/mole;
+	G4Element* elCa = new G4Element (name="Calcium", symbol="Ca", z=20.,a );
+	
 	
 	density = 4.000*g/cm3; //4 for MT9V011, 2.43 for MT9V115
 	G4Material* Resin = new G4Material (name="Resin", density, ncomponents=3);
@@ -165,25 +174,94 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	//Define Fluorine19 material
 	G4Material* F19Mat = new G4Material("F19Mat", 1.19*g/cm3, 1);
 	F19Mat->AddElement(elF19, 1);
+
+	//Define Carbon12 material
+	G4Material* C12Mat = new G4Material("C12Mat", 1.19*g/cm3, 1);
+	C12Mat->AddElement(elC, 1);
+	//Define Oxigen16 material
+	G4Material* O16Mat = new G4Material("O16Mat", 1.19*g/cm3, 1);
+	O16Mat->AddElement(elO, 1);
+	//Define Hidrogen material
+	G4Material* H1Mat = new G4Material("H1Mat", 1.19*g/cm3, 1);
+	H1Mat->AddElement(elH, 1);
 	
-	
-	//Define PMMA (C502H8) Fluorato
-	// NIST reference
-//	G4double Ffracion=6.7e13; //to be red: one F atom every XX PMMA molecules
-	G4double Ffracion=10; //to be red: one F atom every XX PMMA molecules
+	G4double Ffracion=fFluorFraction;
+	if (fFluorFraction<0) Ffracion=1;
+
 	G4Material* PMMAF = new G4Material("PMMAF", 1.19*g/cm3, 2);
-	PMMAF -> AddMaterial(PMMA, 1-1/(1+Ffracion));
-//	PMMAF -> AddMaterial(F19Mat, 1);
-	PMMAF -> AddElement(elF19, 1/(1+Ffracion));
+//	PMMAF -> AddMaterial(PMMA, fractionmass=(1-1/(1+Ffracion)));
+//	PMMAF -> AddMaterial(F19Mat, fractionmass=(1/(1+Ffracion)));
+	PMMAF -> AddMaterial(PMMA, (100-Ffracion)*perCent);
+	PMMAF -> AddMaterial(F19Mat, (Ffracion)*perCent);
+	
+//	PMMAF -> AddElement(elF19, 1/(1+Ffracion));
+
+	G4double AtomicWC12=5*12.01;
+	G4double AtomicWO16=2*16;
+	G4double AtomicWH1=8*1.008;
+	G4double AtomicWF19=Ffracion*19;
+	G4double AtomicWPMMA=AtomicWC12+AtomicWO16+AtomicWH1;
+	G4double AtomicWPMMAFluorato=AtomicWC12+AtomicWO16+AtomicWH1+AtomicWF19;
+
+	G4double MassFractionC12=AtomicWC12/AtomicWPMMA;
+	G4double MassFractionO16=AtomicWO16/AtomicWPMMA;
+	G4double MassFractionH1=AtomicWH1/AtomicWPMMA;
+	
+	G4double MassFractionC12Fluorato=AtomicWC12/AtomicWPMMAFluorato;
+	G4double MassFractionO16Fluorato=AtomicWO16/AtomicWPMMAFluorato;
+	G4double MassFractionH1Fluorato=AtomicWH1/AtomicWPMMAFluorato;
+	G4double MassFractionF19Fluorato=AtomicWF19/AtomicWPMMAFluorato;
+	
+	G4double customPMMAFDensity=1.19*g/cm3*AtomicWPMMAFluorato/AtomicWPMMA;
+
+	G4cout<<"STRONZO "<<MassFractionC12<<G4endl;
+	G4cout<<"STRONZO "<<MassFractionC12Fluorato<<G4endl;
+
+	//Define PMMERDA (C502H8)
+	// NIST reference
+	G4Material* customPMMA = new G4Material("customPMMA", 1.19*g/cm3, 3);
+	customPMMA->AddMaterial(C12Mat, MassFractionC12);
+	customPMMA->AddMaterial(O16Mat, MassFractionO16);
+	customPMMA->AddMaterial(H1Mat, MassFractionH1);
+
+	//Define PMMERDAF (C502H8)
+	// NIST reference
+	G4Material* customPMMAF = new G4Material("customPMMAF", customPMMAFDensity, 4); //fake density to compensate for PMMA atoms loss (with Michela)
+	customPMMAF->AddMaterial(C12Mat, MassFractionC12Fluorato);
+	customPMMAF->AddMaterial(O16Mat, MassFractionO16Fluorato);
+	customPMMAF->AddMaterial(H1Mat, MassFractionH1Fluorato);
+	customPMMAF->AddMaterial(F19Mat, MassFractionF19Fluorato);
+
+#if 1
+	
+
+	//Define Calcium Fluoride
+	// NIST reference: https://physics.nist.gov/cgi-bin/Star/compos.pl?ap130
+	G4Material* CaF = new G4Material("CaF", 3.18*g/cm3, ncomponents=2);
+//	CaF -> AddElement(elCa, natoms=1);
+//	CaF -> AddElement(elF19, natoms=2);
+	CaF -> AddElement(elCa, 51.3341*perCent);
+	CaF -> AddElement(elF19, 48.6659*perCent);
+#endif
 	
 	//############ MATERIAL ASSIGNMENT
-	G4Material* Absorber_mat = PMMAF;
+	G4Material* Absorber_mat = customPMMA;
+	G4Material* Tumor_mat = customPMMAF;
+	if (fFluorFraction==-2) Tumor_mat=F19Mat;
+	if (fFluorFraction==-1) Tumor_mat=CaF;
 	
+	if (!fTumorFlag)Tumor_mat = customPMMA; //se non voglio il tumore, lo faccio dello stesso materiale dell'assorbitore
+
 	G4double AbsorberR=2.5*cm;
 	G4double AbsorberH=10*cm;
 	G4ThreeVector posAbsorber = G4ThreeVector(0, 0, AbsorberH*0.5);
 
 	
+	G4double TumorR=1*cm;
+//	G4double TumorZ=6.4*cm-2*cm;
+	G4double TumorZ=1.4*cm;
+	G4ThreeVector posTumor = G4ThreeVector(0, 0, TumorZ);
+
 	//###################################################
 	// ABSORBER
 	//##########################
@@ -201,7 +279,7 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 						Absorber_mat,           //its material
 						"Absorber");            //its name
 		
-		new G4PVPlacement(0,                     //no rotation
+		 if (1) new G4PVPlacement(0,                     //no rotation
 						  posAbsorber,       //at (0,0,0)
 						  logicAbsorber,            //its logical volume
 						  "Absorber",               //its name
@@ -209,9 +287,33 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 						  false,                 //no boolean operation
 						  0,                     //copy number
 						  checkOverlaps);        //overlaps checking
-		
+	
+	
+	G4cout<<"STRONZO Materiale assorbitore= "<<logicAbsorber->GetMaterial()<<G4endl;
+	//###################################################
+	// TUMOR
+	//##########################
+	
+	G4Orb* solidTumor =
+	new G4Orb("Tumor",                       //its name
+			  TumorR);
+	
+	G4LogicalVolume* logicTumor =
+	new G4LogicalVolume(solidTumor,          //its solid
+						Tumor_mat,           //its material
+						"Tumor");            //its name
+	
+	if(1||fTumorFlag) new G4PVPlacement(0,                     //no rotation
+					  posTumor,       //at (0,0,0)
+					  logicTumor,            //its logical volume
+					  "Tumor",               //its name
+					  logicAbsorber,            //its mother  volume
+					  false,                 //no boolean operation
+					  0,                     //copy number
+					  checkOverlaps);        //overlaps checking
+	
+	G4cout<<"STRONZO Materiale tumore= "<<logicTumor->GetMaterial()<<G4endl;
 
-	//################################################### END DOTA SOURCE
 	
 	// Set scoring volume
 	//Pixelated CMOS

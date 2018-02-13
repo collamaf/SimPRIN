@@ -49,7 +49,7 @@ class G4Run;
 class B1RunAction : public G4UserRunAction
 {
 public:
-	B1RunAction();
+	B1RunAction(G4String);
 	virtual ~B1RunAction();
 	
 	// virtual G4Run* GenerateRun();
@@ -80,11 +80,25 @@ public:
 	
 	std::vector<G4int>& GetRunExitProcess() {return RunExitProcess; }
 	
+	std::vector<G4double>& GetRunX() {return RunVectorX; }
+	std::vector<G4double>& GetRunY() {return RunVectorY; }
+	std::vector<G4double>& GetRunZ() {return RunVectorZ; }
 	std::vector<G4double>& GetRunCosX() {return RunVectorCosX; }
 	std::vector<G4double>& GetRunCosY() {return RunVectorCosY; }
 	std::vector<G4double>& GetRunCosZ() {return RunVectorCosZ; }
 	std::vector<G4double>& GetRunEnGen() {return RunVectorEnGen; }
 	std::vector<G4double>& GetRunIsotopeGen() {return RunVectorIsotopeGen; }
+	std::vector<G4int>& GetRunVolume() {return RunVectorVol; }
+
+	void AddRunX(G4double x) { RunVectorX.push_back(x); }
+	void AddRunY(G4double y) { RunVectorY.push_back(y); }
+	void AddRunZ(G4double z) { RunVectorZ.push_back(z); }
+	void AddRunCosX(G4double cx) { RunVectorCosX.push_back(cx); }
+	void AddRunCosY(G4double cy) { RunVectorCosY.push_back(cy); }
+	void AddRunCosZ(G4double cz) { RunVectorCosZ.push_back(cz); }
+	void AddRunVolume(G4int vol) { RunVectorVol.push_back(vol); }
+	
+	
 	
 	std::vector<G4double>& GetRunEAbsComp() {return RunVectorEAbsComp; }
 
@@ -107,6 +121,8 @@ public:
 	void SetMotherIsotope(G4double miso) {fMotherIsotope=miso;}
 	G4int GetMotherIsotope() {return fMotherIsotope;}
 
+	
+	
 	/*
 	 std::vector<G4double>& GetSourceX() {return RunVectorSourceX; }
 	 std::vector<G4double>& GetSourceY() {return RunVectorSourceY; }
@@ -119,7 +135,7 @@ private:
 	G4Accumulable<G4double> fEdep;
 	G4Accumulable<G4double> fEdep2;
 	G4Accumulable <G4double> fEdkin;
-
+	G4String fFileNameOut;
 	
 	G4int nbEventInRun;
 
@@ -150,6 +166,9 @@ private:
 	std::vector<G4double> RunVectorPixXpos;
 	std::vector<G4double> RunVectorPixYpos;
 	
+	std::vector<G4double>  RunVectorX;
+	std::vector<G4double>  RunVectorY;
+	std::vector<G4double>  RunVectorZ;
 	std::vector<G4double> RunVectorCosX;
 	std::vector<G4double> RunVectorCosY;
 	std::vector<G4double> RunVectorCosZ;
@@ -165,6 +184,7 @@ private:
 	std::vector<G4double> RunVectorCosXExit;
 	std::vector<G4double> RunVectorCosYExit;
 	std::vector<G4double> RunVectorCosZExit;
+	std::vector<G4int> RunVectorVol;
 	
 	std::vector<G4double> RunVectorPartExit;
 	std::vector<G4double> RunVectorParentIDExit;

@@ -62,19 +62,55 @@ int main(int argc,char** argv)
 	
 	// Detect interactive mode (if no arguments) and define UI session
 	G4UIExecutive* ui = 0;
-	if ( argc == 1 ) {
+	if ( argc == 3) {
 		ui = new G4UIExecutive(argc, argv);
 	}
 	
 	
+	// Fluor concentration: to be red: one F atom every XX PMMA molecules
+	// -1 means CaF
+	// -2 means pure F19
+	
+	//	G4double Fluorfracion=6.7e13;
+	//	G4double FluorFracion=.1; //Now is the percentage of F19 in PMMA-F! e.g. 10 means 10%
+	G4double FluorFracion=2; //Now is the number of F19 atoms per each PMMA molecule
+	G4bool RealBeamFlag=true;
+	G4int TumorFlag=true;
+	
+	
+	if ( argc >1 ) {
+		//    x0Scan=(*argv[2]-48)*mm;
+		TumorFlag=strtod (argv[1], NULL);
+		FluorFracion=strtod (argv[2], NULL);
+		
+		G4cout<<"DEBUG Initial parameter check TumorFlag= "<<TumorFlag<<G4endl;
+		G4cout<<"DEBUG Initial parameter check FluorFracion= "<<FluorFracion<<G4endl;
+	
+	}
+	
+
+
 	G4String FileNamePrim;
-	
-	
-		FileNamePrim="PrimariesPRIN";
-	
-	
+	FileNamePrim="PrimariesPRIN";
 	FileNamePrim.append(+ ".dat");
 	std::ofstream primFile(FileNamePrim, std::ios::out);
+	
+	G4cout<<"#### DEBUG ##### "<<G4endl;
+	G4cout<<"FluorFraction= "<<FluorFracion<<G4endl;
+	G4cout<<"RealBeamFlag= "<<RealBeamFlag<<G4endl;
+	G4cout<<"TumorFlag= "<<TumorFlag<<G4endl;
+
+	G4String FileNameOut;
+	FileNameOut="PRINmc";
+	if (TumorFlag) {
+		FileNameOut.append("YT");
+		if (FluorFracion==-2) FileNameOut.append(+ "_AllF");
+		else if (FluorFracion==-1) FileNameOut.append(+ "_AllCaF");
+		else FileNameOut.append(std::to_string((G4int)(FluorFracion)) +"_pF");
+	}
+	else FileNameOut.append("NT");
+	FileNameOut.append(+ ".root");
+	
 	
 	// Choose the Random engine
 	G4Random::setTheEngine(new CLHEP::RanecuEngine);
@@ -84,8 +120,18 @@ int main(int argc,char** argv)
 	//#ifdef G4MULTITHREAD
 	//  G4MTRunManager* runManager = new G4MTRunManager;
 	//#else
-	G4RunManager* runManager = new G4RunManager;
+	//G4RunManager* runManager = new G4RunManager;
 	//#endif
+	
+	
+	//#ifdef G4MULTITHREADED
+#if 0
+	G4MTRunManager* runManager = new G4MTRunManager;
+//	runManager->SetNumberOfThreads( G4Threading::G4GetNumberOfCores() );
+	runManager->SetNumberOfThreads(5 );
+#else
+	G4RunManager* runManager = new G4RunManager;
+#endif
 	
 	// Physics list
 	G4VModularPhysicsList* physicsList = new QBBC;
@@ -93,19 +139,19 @@ int main(int argc,char** argv)
 	runManager->SetUserInitialization(physicsList);
 	// Set mandatory initialization classes
 	// Detector construction
-	runManager->SetUserInitialization(new B1DetectorConstruction()); //DetectorConstruction needs to know if it is a SrSource to place the right geometry
+	runManager->SetUserInitialization(new B1DetectorConstruction(TumorFlag, FluorFracion)); //DetectorConstruction needs to know if it is a SrSource to place the right geometry
 	
-
+	
 	
 	//  runManager->SetUserInitialization(new B1PhysicsList);
 	
 	//B1PhysicsList* physicsList=new B1PhysicsList;
-//	physicsList->RegisterPhysics(new G4StepLimiterPhysics());
+	//	physicsList->RegisterPhysics(new G4StepLimiterPhysics());
 	//runManager->SetUserInitialization(physicsList);
 	
 	// User action initialization
 	//	runManager->SetUserInitialization(new B1ActionInitialization(x0Scan, ZValue, CuDiam, FilterFlag, primFile, TBRvalue,SourceSelect, SourceSelect));
-	runManager->SetUserInitialization(new B1ActionInitialization(primFile));
+	runManager->SetUserInitialization(new B1ActionInitialization(primFile, FluorFracion, RealBeamFlag, FileNameOut));
 	
 	// Initialize visualization
 	//
@@ -123,7 +169,7 @@ int main(int argc,char** argv)
 	if ( ! ui ) {
 		// batch mode
 		G4String command = "/control/execute ";
-		G4String fileName = argv[1];
+		G4String fileName = argv[3];
 		UImanager->ApplyCommand(command+fileName);
 	}
 	else {

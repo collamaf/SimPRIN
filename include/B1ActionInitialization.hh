@@ -38,7 +38,7 @@
 class B1ActionInitialization : public G4VUserActionInitialization
 {
 public:
-	B1ActionInitialization(std::ofstream &);
+	B1ActionInitialization(std::ofstream &, G4double, G4bool,G4String);
 	virtual ~B1ActionInitialization();
 	
 	virtual void BuildForMaster() const;
@@ -47,7 +47,9 @@ public:
 protected:
 
 	std::ofstream &FilePrimaries;
-
+	G4double fFluorFracion;
+	G4bool fRealBeamFlag;
+	G4String fFileNameOut;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

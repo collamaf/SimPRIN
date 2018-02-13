@@ -53,7 +53,15 @@ public:
 private:
     B1RunAction* runStackAction;
     B1EventAction*  fEventAction;
-	std::vector<G4double> GammaStore;
+	std::vector<G4double> GammaStoreEne;
+	std::vector<G4double> GammaStoreX;
+	std::vector<G4double> GammaStoreY;
+	std::vector<G4double> GammaStoreZ;
+	std::vector<G4double> GammaStoreCX;
+	std::vector<G4double> GammaStoreCY;
+	std::vector<G4double> GammaStoreCZ;
+	std::vector<G4int> GammaStoreVolume;
+
 
 };
 

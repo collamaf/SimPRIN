@@ -37,8 +37,8 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-B1ActionInitialization::B1ActionInitialization(std::ofstream& file)
-  : G4VUserActionInitialization(),  FilePrimaries(file)
+B1ActionInitialization::B1ActionInitialization(std::ofstream& file, G4double FluorFracion, G4bool RealBeamFlag, G4String FileNameOut)
+  : G4VUserActionInitialization(),  FilePrimaries(file), fFluorFracion(FluorFracion), fRealBeamFlag(RealBeamFlag), fFileNameOut(FileNameOut)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -50,7 +50,7 @@ B1ActionInitialization::~B1ActionInitialization()
 
 void B1ActionInitialization::BuildForMaster() const
 {
-  B1RunAction* runAction = new B1RunAction();
+  B1RunAction* runAction = new B1RunAction(fFileNameOut);
   SetUserAction(runAction);
 }
 
@@ -60,7 +60,7 @@ void B1ActionInitialization::Build() const
 {
 //  SetUserAction(new B1PrimaryGeneratorAction(runAction));
 
-  B1RunAction* runAction = new B1RunAction();
+  B1RunAction* runAction = new B1RunAction(fFileNameOut);
   SetUserAction(runAction);
   
   B1EventAction* eventAction = new B1EventAction(runAction, FilePrimaries);
@@ -69,7 +69,7 @@ void B1ActionInitialization::Build() const
   SetUserAction(new B1SteppingAction(eventAction, runAction));
 	
 //	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction, TRUE, fSrSourceFlag, TRUE, fTBR, fSrSourceFlag); // Y, Sr, PrintDist, TBR sorge
-	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction);
+	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction, fRealBeamFlag);
 	SetUserAction(primAction);
 	SetUserAction(new B1StackingAction(runAction, eventAction));
 }  

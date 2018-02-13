@@ -43,7 +43,7 @@ class G4LogicalVolume;
 class B1DetectorConstruction : public G4VUserDetectorConstruction
 {
 public:
-	B1DetectorConstruction();
+	B1DetectorConstruction(G4bool, G4double);
 	virtual ~B1DetectorConstruction();
 	
 	virtual G4VPhysicalVolume* Construct();
@@ -52,7 +52,8 @@ public:
 	
 protected:
 	G4LogicalVolume*  fScoringVolume;
-
+	G4bool fTumorFlag;
+	G4double fFluorFraction;
 	
 
 	

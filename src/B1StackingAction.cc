@@ -32,6 +32,7 @@
 #include "B1RunAction.hh"
 #include "B1EventAction.hh"
 #include "G4VProcess.hh"
+#include "G4SystemOfUnits.hh"
 
 #include "G4Track.hh"
 #include "G4NeutrinoE.hh"
@@ -83,11 +84,22 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 	if (track->GetDynamicParticle() ->GetPDGcode()==22) { //if I generated a gamma
 		
 		if (CreatorProcname=="protonInelastic") {
-			GammaStore.push_back(track->GetKineticEnergy()/CLHEP::MeV);
+			GammaStoreEne.push_back(track->GetKineticEnergy()/CLHEP::MeV);
+			GammaStoreX.push_back(track->GetPosition().x()/mm);
+			GammaStoreY.push_back(track->GetPosition().y()/mm);
+			GammaStoreZ.push_back(track->GetPosition().z()/mm);
+			GammaStoreCX.push_back(track->GetMomentumDirection().x());
+			GammaStoreCY.push_back(track->GetMomentumDirection().y());
+			GammaStoreCZ.push_back(track->GetMomentumDirection().z());
+			if (track->GetTouchableHandle()->GetVolume()->GetName()=="Tumor") GammaStoreVolume.push_back(1);
+			else GammaStoreVolume.push_back(0);
+			
 			if (debug)  G4cout<<"DEBUG butto nel vettore!"<<G4endl;
 		}
 		
+		
 		if (debug) G4cout<<"DEBUG PROVA STACKING nuovo fotone! en= "<< track->GetKineticEnergy()/CLHEP::keV  <<G4endl;
+#if 0
 		if (track->GetParentID() == 1) { //figlio di Sr
 			if (debug) G4cout<<"DEBUG Sr Setto il MotherIsotope a 0"<<G4endl;
 			runStackAction->SetMotherIsotope(0);
@@ -105,18 +117,37 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 			(runStackAction->GetRunCosY()).push_back(track->GetMomentumDirection().y());
 			(runStackAction->GetRunCosZ()).push_back(track->GetMomentumDirection().z());
 		}
+#endif
 	}
 	
 	if (track->GetDynamicParticle() ->GetPDGcode()>10000) {
 		
 		if (CreatorProcname=="protonInelastic") {
 			if (debug) G4cout<<"DEBUG vuoto il vettore! Figlio di "<< track->GetDynamicParticle() ->GetPDGcode() <<G4endl;
-			for (size_t aa=0; aa<GammaStore.size(); aa++) {
-				if (debug) G4cout<<GammaStore.at(aa)<<G4endl;
-				runStackAction->AddExitGammaEne(GammaStore.at(aa));
+			for (size_t aa=0; aa<GammaStoreEne.size(); aa++) {
+				if (debug) G4cout<<GammaStoreEne.at(aa)<<G4endl;
+				runStackAction->AddExitGammaEne(GammaStoreEne.at(aa));
 				runStackAction->AddExitGammaMother(track->GetDynamicParticle() ->GetPDGcode() );
+				runStackAction->AddRunX(GammaStoreX.at(aa));
+				runStackAction->AddRunY(GammaStoreY.at(aa));
+				runStackAction->AddRunZ(GammaStoreZ.at(aa));
+				runStackAction->AddRunCosX(GammaStoreCX.at(aa));
+				runStackAction->AddRunCosY(GammaStoreCY.at(aa));
+				runStackAction->AddRunCosZ(GammaStoreCZ.at(aa));
+				runStackAction->AddRunVolume(GammaStoreVolume.at(aa));
+
+				
+				
 			}
-			GammaStore.clear();
+			GammaStoreEne.clear();
+			GammaStoreX.clear();
+			GammaStoreY.clear();
+			GammaStoreZ.clear();
+			GammaStoreCX.clear();
+			GammaStoreCY.clear();
+			GammaStoreCZ.clear();
+			GammaStoreVolume.clear();
+		
 		}
 	}
 	
