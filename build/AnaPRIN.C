@@ -25,6 +25,7 @@
 #define MINZ -10
 #define MAXZ 110
 
+#define NELEMENTS 14
 
 void AnaPRIN::Loop()
 {
@@ -37,13 +38,13 @@ void AnaPRIN::Loop()
 	//    The macro loops an all entries to save contributions to gamma yield for several isotopes
 	//    It automatically reads all the registered isotopes, creates one histo for each and saves them on an output root file
 	
-	// Last Edit on 2018-02-08 by collamaf
+	// Last Edit on 2018-02-19 by collamaf - now more elastic, manages cases in which some isotopes of the list are not found
 	
 	if (fChain == 0) return;
 	
 	Long64_t nentries = fChain->GetEntriesFast();
-	double EneThrMin=4.8;
-	double EneThrMax=7.8;
+	double EneThrMin=MINEZOOM;
+	double EneThrMax=MAXEZOOM;
 	
 	TH1F* AllEne=new TH1F("AllEne","Energy spectrum of all photons exiting the absorber", NBINE, MINE, MAXE);
 	TH1F* TuttiGammaX=new TH1F("AllX","AllX", NBINX, MINX, MAXX);
@@ -180,104 +181,71 @@ void AnaPRIN::Loop()
 		}
 		
 	}
-	
+
 	if (debug>1) cout<<"DEBUG Carbonio12 sta alla posizione "<<mappa[1000060120]<<endl;
 	
 
 	AllEne->SetLineColor(kBlack);
 	AllEne->Draw();
 
+	int ElementPos[NELEMENTS];
+	int ElementName[NELEMENTS]= {
+		1000060110,
+		1000060120,
+		1000060130,
+		1000080150,
+		1000080160,
+		1000090170,
+		1000020040,
+		1000070120,
+		1000070140,
+		1000070150,
+		1000050100,
+		1000050110,
+		1000090180,
+		1000090190
+	};
+	
+	Color_t ColorMap[NELEMENTS]={
+		kRed, //C11
+		kBlue, //C12
+		kCyan+2, //C13
+		kMagenta, //O15
+		kGreen, //O16
+		kOrange, //F17
+		kCyan, //He4
+		kRed+2, //N12
+		kYellow, //N14
+		kViolet+6, //N15
+		kGray+1, //B10
+		kOrange-6,
+		kGreen+3,
+		kOrange+1
+	};
 
-	auto C11 = mappa.find(1000060110);
-	cout<<"Trovato C11 in posizone: "<<C11->second<<endl;
-	auto C12 = mappa.find(1000060120);
-	cout<<"Trovato C12 in posizone: "<<C12->second<<endl;
-	auto C13 = mappa.find(1000060130);
-	cout<<"Trovato C13 in posizone: "<<C13->second<<endl;
-	auto O15 = mappa.find(1000080150);
-	cout<<"Trovato O15 in posizone: "<<O15->second<<endl;
-	auto O16 = mappa.find(1000080160);
-	cout<<"Trovato O16 in posizone: "<<O16->second<<endl;
-	auto F17 = mappa.find(1000090170);
-	cout<<"Trovato F17 in posizone: "<<F17->second<<endl;
-	auto He4 = mappa.find(1000020040);
-	cout<<"Trovato He4 in posizone: "<<He4->second<<endl;
-	auto N12 = mappa.find(1000070120);
-	cout<<"Trovato N12 in posizone: "<<N12->second<<endl;
-	auto N14 = mappa.find(1000070140);
-	cout<<"Trovato N14 in posizone: "<<N14->second<<endl;
-	auto N15 = mappa.find(1000070150);
-	cout<<"Trovato N15 in posizone: "<<N15->second<<endl;
-	auto B10 = mappa.find(1000050100);
-	cout<<"Trovato N15 in posizone: "<<B10->second<<endl;
-	auto B11 = mappa.find(1000050110);
-	cout<<"Trovato B11 in posizone: "<<B11->second<<endl;
-	auto F18 = mappa.find(1000090180);
-	cout<<"Trovato F18 in posizone: "<<F18->second<<endl;
-	auto F19 = mappa.find(1000090190);
-	cout<<"Trovato F19 in posizone: "<<F19->second<<endl;
-	
-	HistoEne[C11->second]->SetFillColor(kRed); //C11
-	HistoEne[C12->second]->SetFillColor(kBlue); //C12
-	HistoEne[C13->second]->SetFillColor(kCyan+2); //C13
-	HistoEne[O15->second]->SetFillColor(kMagenta); //O15
-	HistoEne[O16->second]->SetFillColor(kGreen); //O16
-	HistoEne[F17->second]->SetFillColor(kOrange); //F17
-	HistoEne[He4->second]->SetFillColor(kCyan); //He4
-	HistoEne[N12->second]->SetFillColor(kRed+2); //N12
-	HistoEne[N14->second]->SetFillColor(kYellow); //N14
-	HistoEne[N15->second]->SetFillColor(kViolet+6); //N15
-	HistoEne[B10->second]->SetFillColor(kGray+1); //B10
-	HistoEne[B11->second]->SetFillColor(kOrange-6); //B11
-	if(F18->second>=0) HistoEne[F18->second]->SetFillColor(kGreen+3); //F18
-	if(F19->second>=0)HistoEne[F19->second]->SetFillColor(kOrange+1); //F19
-#if 0
-	HistoEne[C11->second]->SetLineColor(kRed); //C11
-	HistoEne[C12->second]->SetLineColor(kBlue); //C12
-	HistoEne[C13->second]->SetLineColor(kCyan+2); //C13
-	HistoEne[O15->second]->SetLineColor(kMagenta); //O15
-	HistoEne[O16->second]->SetLineColor(kGreen); //O16
-	HistoEne[F17->second]->SetLineColor(kOrange); //F17
-	HistoEne[He4->second]->SetLineColor(kCyan); //He4
-	HistoEne[N12->second]->SetLineColor(kRed+2); //N12
-	HistoEne[N14->second]->SetLineColor(kYellow); //N14
-	HistoEne[N15->second]->SetLineColor(kViolet+6); //N15
-	HistoEne[B10->second]->SetLineColor(kGray+1); //B10
-	HistoEne[B11->second]->SetLineColor(kOrange-6); //B11
-#endif
-	
-	
-	HistoZ[C11->second]->SetFillColor(kRed); //C11
-	HistoZ[C12->second]->SetFillColor(kBlue); //C12
-	HistoZ[C13->second]->SetFillColor(kCyan+2); //C13
-	HistoZ[O15->second]->SetFillColor(kMagenta); //O15
-	HistoZ[O16->second]->SetFillColor(kGreen); //O16
-	HistoZ[F17->second]->SetFillColor(kOrange); //F17
-	HistoZ[He4->second]->SetFillColor(kCyan); //He4
-	HistoZ[N12->second]->SetFillColor(kRed+2); //N12
-	HistoZ[N14->second]->SetFillColor(kYellow); //N14
-	HistoZ[N15->second]->SetFillColor(kViolet+6); //N15
-	HistoZ[B10->second]->SetFillColor(kGray+1); //B10
-	HistoZ[B11->second]->SetFillColor(kOrange-6); //B11
-	if(F18->second>=0) HistoZ[F18->second]->SetFillColor(kGreen+3); //F18
-	if(F19->second>=0) HistoZ[F19->second]->SetFillColor(kOrange+1); //F19
+	for (jj=0; jj<NELEMENTS; jj++) {
+		
+		auto TempFind = mappa.find(ElementName[jj]);
+		if (TempFind->second>=0 && TempFind->second<=AllMothers.size()) {
+			ElementPos[jj]=TempFind->second;
+			cout<<"Trovato elemento: "<< ElementName[jj] <<" in posizone: "<<ElementPos[jj]<<endl;
+		} else {
+			ElementPos[jj]=-10;
+			cout<<"NON Trovato elemento: "<< ElementName[jj]<<endl;
 
-#if 0
-	HistoZ[C11->second]->SetLineColor(kRed); //C11
-	HistoZ[C12->second]->SetLineColor(kBlue); //C12
-	HistoZ[C13->second]->SetLineColor(kCyan+2); //C13
-	HistoZ[O15->second]->SetLineColor(kMagenta); //O15
-	HistoZ[O16->second]->SetLineColor(kGreen); //O16
-	HistoZ[F17->second]->SetLineColor(kOrange); //F17
-	HistoZ[He4->second]->SetLineColor(kCyan); //He4
-	HistoZ[N12->second]->SetLineColor(kRed+2); //N12
-	HistoZ[N14->second]->SetLineColor(kYellow); //N14
-	HistoZ[N15->second]->SetLineColor(kViolet+6); //N15
-	HistoZ[B10->second]->SetLineColor(kGray+1); //B10
-	HistoZ[B11->second]->SetLineColor(kOrange-6); //B11
-#endif
-	
-	
+		}
+	}
+
+	for (jj=0; jj<NELEMENTS; jj++) {
+		if (ElementPos[jj]>=0) {
+			HistoEne[ElementPos[jj]]->SetFillColor(ColorMap[jj]);
+			//		HistoEne[ElementPos[jj]]->SetLineColor(ColorMap[jj]);
+			HistoZ[ElementPos[jj]]->SetFillColor(ColorMap[jj]);
+			//		HistoZ[ElementPos[jj]]->SetLineColor(ColorMap[jj]);
+		}
+	}
+
+	//Output: salvo prima gli HistoEne e poi gli HistoZ
 	for (jj=0; jj<AllMothers.size(); jj++) {
 		//		cout<<AllMothers.at(jj)<<endl;
 		HistoEne[jj]->Write();
@@ -289,7 +257,7 @@ void AnaPRIN::Loop()
 	}
 
 	
-	
+
 	AllEne->Write();
 	AllEneZoom->Write();
 	TuttiGammaX->Write();
@@ -339,22 +307,14 @@ void AnaPRIN::Loop()
 	TLegend* legendEne=new TLegend(0.55, 0.55, .9, .9);
 	legendEne->SetName("legendEne");
 	legendEne->SetNColumns(2);
-	legendEne->AddEntry(HistoEne[C11->second],HistoEne[C11->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[C12->second],HistoEne[C12->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[C13->second],HistoEne[C13->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[O15->second],HistoEne[O15->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[O16->second],HistoEne[O16->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[F17->second],HistoEne[F17->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[He4->second],HistoEne[He4->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[N12->second],HistoEne[N12->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[N14->second],HistoEne[N14->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[N15->second],HistoEne[N15->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[B10->second],HistoEne[B10->second]->GetTitle());
-	legendEne->AddEntry(HistoEne[B11->second],HistoEne[B11->second]->GetTitle());
-	if(F18->second>=0) legendEne->AddEntry(HistoEne[F18->second],HistoEne[F18->second]->GetTitle());
-	if(F19->second>=0) legendEne->AddEntry(HistoEne[F19->second],HistoEne[F19->second]->GetTitle());
+	for (jj=0; jj<NELEMENTS; jj++) {
+		if (ElementPos[jj]>=0) legendEne->AddEntry(HistoEne[ElementPos[jj]],HistoEne[ElementPos[jj]]->GetTitle());
+		
+	}
 	legendEne->Draw();
 	legendEne->Write();
+	
+
 
 	
 	
@@ -364,20 +324,11 @@ void AnaPRIN::Loop()
 	TLegend* legendZ=new TLegend(0.65, 0.6, .9, .9);
 	legendZ->SetName("legendZ");
 	legendZ->SetNColumns(2);
-	legendZ->AddEntry(HistoZ[C11->second],HistoZ[C11->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[C12->second],HistoZ[C12->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[C13->second],HistoZ[C13->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[O15->second],HistoZ[O15->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[O16->second],HistoZ[O16->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[F17->second],HistoZ[F17->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[He4->second],HistoZ[He4->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[N12->second],HistoZ[N12->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[N14->second],HistoZ[N14->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[N15->second],HistoZ[N15->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[B10->second],HistoZ[B10->second]->GetTitle());
-	legendZ->AddEntry(HistoZ[B11->second],HistoZ[B11->second]->GetTitle());
-	if(F18->second>=0) legendZ->AddEntry(HistoZ[F18->second],HistoZ[F18->second]->GetTitle());
-	if(F19->second>=0) legendZ->AddEntry(HistoZ[F19->second],HistoZ[F19->second]->GetTitle());
+	for (jj=0; jj<NELEMENTS; jj++) {
+		if (ElementPos[jj]>=0) legendZ->AddEntry(HistoEne[ElementPos[jj]],HistoEne[ElementPos[jj]]->GetTitle());
+		
+	}
+	
 	legendZ->Draw();
 	legendZ->Write();
 
@@ -386,6 +337,7 @@ void AnaPRIN::Loop()
 	StackZ->Write();
 	EneFromT->Write();
 	EneFromNT->Write();
+
 
 	TCanvas* canvStackBoth=new TCanvas("canvStackBoth");
 	canvStackBoth->Divide(2,1);
@@ -398,7 +350,7 @@ void AnaPRIN::Loop()
 	legendZ->Draw();
 
 	canvStackBoth->Write();
-#if 1
+
 	GammaXECut->Write();
 	GammaYECut->Write();
 	GammaZECut->Write();
@@ -407,7 +359,6 @@ void AnaPRIN::Loop()
 	ShapeZY->Write();
 	ShapeXYECut->Write();
 	ShapeZYECut->Write();
-#endif
 }
 
 
