@@ -38,6 +38,11 @@ Multi Thread non sembra essere molto efficiente
 con 1000000 primari con tumor di solo fluoro
 
 
+[16/02/18, 19:02:37] michela: 1.un cilindro di PMMA con la sfera di PMMA
+[16/02/18, 19:03:04] michela: 2.un cilindro di vuoto (o d'aria) con sfera di F puro
+[16/02/18, 19:03:20] michela: su 1 si sparano protoni delle'ergia giusta per morire nella pallina
+
+
 
 
 TFile *f0 = TFile::Open("PRINmcYT_AllF_out.root")
@@ -92,4 +97,42 @@ c->Loop()
 c=new AnaPRIN("RootBuoni/PRINmcYT_Real_1000pF")
 c->Loop()
 .q
+
+
+
+
+
+Grafici da fare:
+Source->Draw("GammaEne:ProtEne","GammaVolume==1")
+
+
+
+- ProtEne se da T o non da T, normalizzati per confrontare le forme!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
