@@ -43,10 +43,10 @@ class AnaPRIN {
 	vector<double>  *ExitParentID;
 	vector<int>     *ExitProcess;
 	Double_t        ExitTrackN;
-	vector<double>  *ExitGammasEne;
-	vector<int>     *ExitGammasMother;
-	vector<int>     *ExitGammasOriginVolume;
-
+	vector<double>  *GammaEne;
+	vector<int>     *GammaMother;
+	vector<int>     *GammaVolume;
+	vector<double> *ProtEne;
 	
 	
 	
@@ -70,12 +70,13 @@ class AnaPRIN {
 	TBranch        *b_ExitParentID;   //!
 	TBranch        *b_ExitProcess;   //!
 	TBranch        *b_ExitTrackN;   //!
-	TBranch        *b_ExitGammasEne;   //!
-	TBranch        *b_ExitGammasMother;   //!
-	TBranch        *b_ExitGammasOriginVolume;   //!
-
+	TBranch        *b_GammaEne;   //!
+	TBranch        *b_GammaMother;   //!
+	TBranch        *b_GammaVolume;   //!
+	TBranch        *b_ProtEne;   //!
+	
 	//   AnaPRIN(TTree *tree=0);
-	AnaPRIN(TString filename);
+	AnaPRIN(TString filename, int EventFraction=100);
 	TString nomefile;
 	
 	virtual ~AnaPRIN();
@@ -88,22 +89,65 @@ class AnaPRIN {
 	virtual void     Show(Long64_t entry = -1);
 	virtual void SpacchettaIsotopo (int isotope, int* Z , int*A);
 	TFile* outfile;
+	
+	TDirectory *DirHistoEne;
+	TDirectory *DirHistoZ;
+	TDirectory* DirHistoProtEne;
+	
+	int fEventFraction;
+	
+	const char* PeriodicTable[22]={
+		"H",
+		"He",
+		"Li",
+		"Be",
+		"B",
+		"C",
+		"N",
+		"O",
+		"F",
+		"Ne",
+		"Na",
+		"Mg",
+		"Al",
+		"Si",
+		"P",
+		"S",
+		"Cl",
+		"Ar",
+		"K",
+		"Ca",
+		"Sc",
+		"Ti"
+	};
+	
 };
 
 #endif
 
 #ifdef AnaPRIN_cxx
-AnaPRIN::AnaPRIN(TString filename)
+AnaPRIN::AnaPRIN(TString filename, int EventFraction)
 {
 	nomefile=filename;
+	fEventFraction=EventFraction;
 	
 	TFile *f = new TFile(Form("%s.root",filename.Data()));
 	TTree* tree = (TTree*)gDirectory->Get("Source");
 	Init(tree);
 	
 	outfile=new TFile(Form("%s_out.root", filename.Data()), "RECREATE");
+	DirHistoEne = outfile->mkdir("DirHistoEne");
+	DirHistoZ = outfile->mkdir("DirHistoZ");
+	DirHistoProtEne=outfile->mkdir("DirHistoProtEne");
 	outfile->cd();
 	
+	cout<<"############################################################################"<<endl;
+	cout<<"########## Analysing file: "<<  Form("%s.root",filename.Data()) <<" #######################"<<endl;
+	cout<<"########## Creating output file: "<<  Form("%s_out.root", filename.Data()) <<" #############"<<endl;
+	cout<<"############################################################################"<<endl;
+	cout<<"########## I will analyze "<< fEventFraction<<"% of events #####################################"<<endl;
+	cout<<"############################################################################"<<endl;
+
 	
 }
 
@@ -161,10 +205,11 @@ void AnaPRIN::Init(TTree *tree)
 	ExitPart = 0;
 	ExitParentID = 0;
 	ExitProcess = 0;
-	ExitGammasEne = 0;
-	ExitGammasMother = 0;
-	ExitGammasOriginVolume = 0;
-
+	GammaEne = 0;
+	GammaMother = 0;
+	GammaVolume = 0;
+	ProtEne = 0;
+	
 	// Set branch addresses and branch pointers
 	if (!tree) return;
 	fChain = tree;
@@ -190,9 +235,10 @@ void AnaPRIN::Init(TTree *tree)
 	fChain->SetBranchAddress("ExitParentID", &ExitParentID, &b_ExitParentID);
 	fChain->SetBranchAddress("ExitProcess", &ExitProcess, &b_ExitProcess);
 	fChain->SetBranchAddress("ExitTrackN", &ExitTrackN, &b_ExitTrackN);
-	fChain->SetBranchAddress("ExitGammasEne", &ExitGammasEne, &b_ExitGammasEne);
-	fChain->SetBranchAddress("ExitGammasMother", &ExitGammasMother, &b_ExitGammasMother);
-	fChain->SetBranchAddress("ExitGammasOriginVolume", &ExitGammasOriginVolume, &b_ExitGammasOriginVolume);
+	fChain->SetBranchAddress("GammaEne", &GammaEne, &b_GammaEne);
+	fChain->SetBranchAddress("GammaMother", &GammaMother, &b_GammaMother);
+	fChain->SetBranchAddress("GammaVolume", &GammaVolume, &b_GammaVolume);
+	fChain->SetBranchAddress("ProtEne", &ProtEne, &b_ProtEne);
 	Notify();
 }
 
