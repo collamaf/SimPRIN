@@ -63,11 +63,12 @@ using std::ios;
 using std::endl;
 
 
-B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1EventAction* eventAction, G4bool RealBeamFlag)
+B1PrimaryGeneratorAction::B1PrimaryGeneratorAction(B1EventAction* eventAction, G4bool RealBeamFlag, G4double FluorFraction)
 : G4VUserPrimaryGeneratorAction(),
 fParticleGun(0) ,
 evtPrimAction(eventAction),
-fRealBeamFlag(RealBeamFlag)
+fRealBeamFlag(RealBeamFlag),
+fFluorFraction(FluorFraction)
 
 {
 	G4int n_particle = 1;
@@ -93,17 +94,18 @@ B1PrimaryGeneratorAction::~B1PrimaryGeneratorAction()
 
 void B1PrimaryGeneratorAction::GeneratePrimaries (G4Event* anEvent)
 {
+
+	G4double BeamEnergy=100*MeV;
 	
-	//Stronzium
 	
-	
-	fParticleGun->SetParticleEnergy(100*MeV); //SetParticleEnergy uses kinetic energy
-	
-/*
-	evtPrimAction->SetSourceCosX(0);
-	evtPrimAction->SetSourceCosY(0);
-	evtPrimAction->SetSourceCosZ(0);
-*/
+	if (fFluorFraction<=-10000) {
+		fRealBeamFlag=false;
+		BeamEnergy=(((G4int)fabs(fFluorFraction))%100)/10.*MeV;
+		if(anEvent->GetEventID()==0) G4cout<<"DEBUG: Simple simulation requested! Proton pointlike beam with energy= "<<BeamEnergy/MeV<<" MeV"<<G4endl;
+	}
+//	BeamEnergy=15*MeV;
+	fParticleGun->SetParticleEnergy(BeamEnergy); //SetParticleEnergy uses kinetic energy
+
 	G4ThreeVector momentumDirection = G4ThreeVector(0,0,1);
 	
 	

@@ -69,7 +69,7 @@ void B1ActionInitialization::Build() const
   SetUserAction(new B1SteppingAction(eventAction, runAction));
 	
 //	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction, TRUE, fSrSourceFlag, TRUE, fTBR, fSrSourceFlag); // Y, Sr, PrintDist, TBR sorge
-	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction, fRealBeamFlag);
+	B1PrimaryGeneratorAction* primAction= new B1PrimaryGeneratorAction(eventAction, fRealBeamFlag, fFluorFracion);
 	SetUserAction(primAction);
 	SetUserAction(new B1StackingAction(runAction, eventAction));
 }  

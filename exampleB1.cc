@@ -50,6 +50,7 @@
 #include "G4StepLimiter.hh"
 #include "G4UserLimits.hh"
 #include "G4StepLimiterPhysics.hh"
+//#include "G4ScoringManager.hh"
 
 #include <stdio.h>      /* printf, NULL */
 #include <stdlib.h>
@@ -70,11 +71,20 @@ int main(int argc,char** argv)
 	// Fluor concentration: to be red: one F atom every XX PMMA molecules
 	// -1 means CaF
 	// -2 means pure F19
+	// -10015 means simple MC with Eproton=1.5MeV
+	// -10020 means simple MC with Eproton=2MeV
+	// -10025 means simple MC with Eproton=2.5MeV
+	// -10030 means simple MC with Eproton=3MeV
+	// -10035 means simple MC with Eproton=3.5MeV
+	// -10040 means simple MC with Eproton=4MeV
 	
+	// ./exampleB1 1 -1 ../run1.mac
+	// ./exampleB1 {TumorFlag} {FluorFraction} ../run1.mac
+
 	//	G4double Fluorfracion=6.7e13;
 	//	G4double FluorFracion=.1; //Now is the percentage of F19 in PMMA-F! e.g. 10 means 10%
 	G4double FluorFracion=2; //Now is the number of F19 atoms per each PMMA molecule
-	G4bool RealBeamFlag=true;
+	G4bool RealBeamFlag=false;
 	G4int TumorFlag=true;
 	
 	
@@ -102,13 +112,25 @@ int main(int argc,char** argv)
 
 	G4String FileNameOut;
 	FileNameOut="PRINmc";
+	
+	if (argc==3) FileNameOut="VIS";
+	
 	if (TumorFlag) {
+		G4cout<<"Required tumor volume"<<G4endl;
 		FileNameOut.append("YT");
 		if (FluorFracion==-2) FileNameOut.append(+ "_AllF");
 		else if (FluorFracion==-1) FileNameOut.append(+ "_AllCaF");
 		else FileNameOut.append(std::to_string((G4int)(FluorFracion)) +"_pF");
 	}
-	else FileNameOut.append("NT");
+	else {
+		FileNameOut.append("NT");
+		G4cout<<"NOT Required tumor volume"<<G4endl;
+	}
+	if (FluorFracion<=-10000) {
+		FileNameOut="PRINmcSimple_";
+		FileNameOut.append(std::to_string((G4int)(fabs(FluorFracion))%100*100) +"keV");
+	}
+	if (argc==3) FileNameOut="VIS";
 	FileNameOut.append(+ ".root");
 	
 	
@@ -132,6 +154,8 @@ int main(int argc,char** argv)
 #else
 	G4RunManager* runManager = new G4RunManager;
 #endif
+//	G4ScoringManager::GetScoringManager();
+	
 	
 	// Physics list
 	G4VModularPhysicsList* physicsList = new QBBC;

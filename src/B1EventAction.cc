@@ -112,6 +112,8 @@ void B1EventAction::BeginOfEventAction(const G4Event* )
 	(fRunAction->GetRunCosZExit()).clear();
 	(fRunAction->GetRunPartExit()).clear();
 	(fRunAction->GetRunParentIDExit()).clear();
+	(fRunAction->GetRunExitProEne()).clear();
+
 	
 	(fRunAction->GetRunExitProcess()).clear();
 	
@@ -119,6 +121,7 @@ void B1EventAction::BeginOfEventAction(const G4Event* )
 	
 	(fRunAction->GetRunExitGammaEne()).clear();
 	(fRunAction->GetRunExitGammaMother()).clear();
+	(fRunAction->GetRunExitProEne()).clear();
 
 	//	}
 	fno=0;
@@ -155,8 +158,9 @@ void B1EventAction::EndOfEventAction(const G4Event* evento)
 
 	G4int NevTot=fRunAction->GetEventNumber();
 	
-	if ((100*evento->GetEventID())%NevTot==0) FilePrimaries<<"Progress status: "<<(evento->GetEventID()/(G4double)NevTot)*100<<" %, Nev= "<<evento->GetEventID()<<", NTotEv= "<<NevTot<<G4endl;
-	
+	if ((100*evento->GetEventID())%NevTot==0){
+		FilePrimaries<<std::fixed<<"Progress status: "<<(G4int)((evento->GetEventID()/(G4double)NevTot)*100)<<" %, Nev= "<<evento->GetEventID()<<std::scientific<<", NTotEv= "<<(G4double)NevTot<<G4endl;
+	}
 	// get analysis manager
 	
 	auto analysisManager = G4AnalysisManager::Instance();

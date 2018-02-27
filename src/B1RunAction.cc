@@ -282,9 +282,10 @@ void B1RunAction::CreateHistogram()
 	analysisManager->CreateNtupleDColumn(1,"ExitParentID", RunVectorParentIDExit);                           //16
 	analysisManager->CreateNtupleIColumn(1,"ExitProcess", RunExitProcess); //17
 	analysisManager->CreateNtupleDColumn(1,"ExitTrackN"); //18
-	analysisManager->CreateNtupleDColumn(1,"ExitGammasEne", RunExitGammaEne); //19
-	analysisManager->CreateNtupleIColumn(1,"ExitGammasMother", RunExitGammaMother); //20
-	analysisManager->CreateNtupleIColumn(1,"ExitGammasOriginVolume", RunVectorVol); //21
+	analysisManager->CreateNtupleDColumn(1,"GammaEne", RunExitGammaEne); //19
+	analysisManager->CreateNtupleIColumn(1,"GammaMother", RunExitGammaMother); //20
+	analysisManager->CreateNtupleIColumn(1,"GammaVolume", RunVectorVol); //21
+	analysisManager->CreateNtupleDColumn(1,"ProtEne", RunExitProEne); //21
 
 	//	analysisManager->CreateNtupleDColumn(1,"ExitProcess", RunVectorParentIDExit); //16
 	

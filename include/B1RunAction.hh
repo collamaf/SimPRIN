@@ -77,6 +77,8 @@ public:
 	std::vector<G4double>& GetRunCosZExit() {return RunVectorCosZExit; }
 	std::vector<G4double>& GetRunPartExit() {return RunVectorPartExit; }
 	std::vector<G4double>& GetRunParentIDExit() {return RunVectorParentIDExit; }
+
+	
 	
 	std::vector<G4int>& GetRunExitProcess() {return RunExitProcess; }
 	
@@ -112,10 +114,12 @@ public:
 
 	std::vector<G4double>& GetRunExitGammaEne() {return RunExitGammaEne; }
 	std::vector<G4int>& GetRunExitGammaMother() {return RunExitGammaMother; }
+	std::vector<G4double>& GetRunExitProEne() {return RunExitProEne; }
 
 	void AddExitGammaEne(G4double ene) { RunExitGammaEne.push_back(ene); }
 	void AddExitGammaMother(G4int part) { RunExitGammaMother.push_back(part); }
-	
+	void AddExitProEne(G4double ene) { RunExitProEne.push_back(ene); }
+
 	G4int GetEventNumber() {return nbEventInRun;}
 	
 	void SetMotherIsotope(G4double miso) {fMotherIsotope=miso;}
@@ -196,6 +200,8 @@ private:
 	
 	std::vector<G4double> RunExitGammaEne;
 	std::vector<G4int> RunExitGammaMother;
+	std::vector<G4double> RunExitProEne;
+
 	/*
 	 std::vector<G4double> RunVectorSourceX;
 	 std::vector<G4double> RunVectorSourceY;

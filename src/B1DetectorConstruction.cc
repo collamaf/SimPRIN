@@ -75,6 +75,14 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	//
 	G4bool checkOverlaps = false;
 	
+	G4bool SimpleMC=false;
+	
+	if (fFluorFraction<=-10000) {
+		SimpleMC=true;
+		G4cout<<"DEBUG: Simple simulation requested! Proton beam on CaF Cylinder"<<G4endl;
+	}
+
+	
 	//
 	// World
 	//
@@ -254,13 +262,20 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 
 	G4double AbsorberR=2.5*cm;
 	G4double AbsorberH=10*cm;
+	
+	if (SimpleMC){
+		AbsorberR=1.27*cm;
+		AbsorberH=0.5*cm;
+		Absorber_mat=CaF;
+	}
+	
 	G4ThreeVector posAbsorber = G4ThreeVector(0, 0, AbsorberH*0.5);
 
-	
 	G4double TumorR=1*cm;
+	G4double Buccia=2*mm;
 //	G4double TumorZ=6.4*cm-2*cm;
-	G4double TumorZ=1.4*cm;
-	G4ThreeVector posTumor = G4ThreeVector(0, 0, TumorZ);
+	G4double TumorZ=1.5*cm; //was 1.4 - 0.7 in case of Tumor, 
+	G4ThreeVector posTumorOut = G4ThreeVector(0, 0, TumorZ);
 
 	//###################################################
 	// ABSORBER
@@ -294,23 +309,46 @@ G4VPhysicalVolume* B1DetectorConstruction::Construct()
 	// TUMOR
 	//##########################
 	
+	G4Orb* solidTumorOut =
+	new G4Orb("TumorOut",                       //its name
+			  TumorR);
+	
+	G4LogicalVolume* logicTumorOut =
+	new G4LogicalVolume(solidTumorOut,          //its solid
+						Tumor_mat,           //its material
+						"TumorOut");            //its name
+	
+//	if(1||fTumorFlag) new G4PVPlacement(0,                     //no rotation
+	if(!SimpleMC) new G4PVPlacement(0,                     //no rotation
+					  posTumorOut,       //at (0,0,0)
+					  logicTumorOut,            //its logical volume
+					  "TumorOut",               //its name
+					  logicAbsorber,            //its mother  volume
+					  false,                 //no boolean operation
+					  0,                     //copy number
+					  checkOverlaps);        //overlaps checking
+	
+	G4cout<<"STRONZO Materiale tumore OUT = "<<logicTumorOut->GetMaterial()<<G4endl;
+	
+	
 	G4Orb* solidTumor =
 	new G4Orb("Tumor",                       //its name
-			  TumorR);
+			  TumorR-Buccia);
 	
 	G4LogicalVolume* logicTumor =
 	new G4LogicalVolume(solidTumor,          //its solid
 						Tumor_mat,           //its material
 						"Tumor");            //its name
 	
-	if(1||fTumorFlag) new G4PVPlacement(0,                     //no rotation
-					  posTumor,       //at (0,0,0)
-					  logicTumor,            //its logical volume
-					  "Tumor",               //its name
-					  logicAbsorber,            //its mother  volume
-					  false,                 //no boolean operation
-					  0,                     //copy number
-					  checkOverlaps);        //overlaps checking
+	//	if(1||fTumorFlag) new G4PVPlacement(0,                     //no rotation
+	if(!SimpleMC) new G4PVPlacement(0,                     //no rotation
+									G4ThreeVector(0.,0.,0.),       //at (0,0,0)
+									logicTumor,            //its logical volume
+									"Tumor",               //its name
+									logicTumorOut,            //its mother  volume
+									false,                 //no boolean operation
+									0,                     //copy number
+									checkOverlaps);        //overlaps checking
 	
 	G4cout<<"STRONZO Materiale tumore= "<<logicTumor->GetMaterial()<<G4endl;
 

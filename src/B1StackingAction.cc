@@ -53,7 +53,7 @@ B1StackingAction::~B1StackingAction()
 G4ClassificationOfNewTrack
 B1StackingAction::ClassifyNewTrack(const G4Track* track)
 {
-	G4int debug=0;
+	G4int debug=1;
 	
 	/*
 	 
@@ -83,7 +83,7 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
     
 	if (track->GetDynamicParticle() ->GetPDGcode()==22) { //if I generated a gamma
 		
-		if (CreatorProcname=="protonInelastic") {
+		if (CreatorProcname=="protonInelastic" || CreatorProcname=="neutronInelastic") { //if the gamma was due to protonInelastic process dump all the wanted info in a temp set of vectors
 			GammaStoreEne.push_back(track->GetKineticEnergy()/CLHEP::MeV);
 			GammaStoreX.push_back(track->GetPosition().x()/mm);
 			GammaStoreY.push_back(track->GetPosition().y()/mm);
@@ -95,35 +95,19 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 			else GammaStoreVolume.push_back(0);
 			
 			if (debug)  G4cout<<"DEBUG butto nel vettore!"<<G4endl;
+			if (debug) G4cout<<"DEBUG PROVA STACKING nuovo fotone! en= "<< track->GetKineticEnergy()/CLHEP::keV  <<G4endl;
+			if (debug) G4cout<<"DEBUG PROVA STACKING Volume creazione fotone per protonInelastic= "<< track->GetTouchableHandle()->GetVolume()->GetName()  <<G4endl<<G4endl;
+
 		}
 		
 		
-		if (debug) G4cout<<"DEBUG PROVA STACKING nuovo fotone! en= "<< track->GetKineticEnergy()/CLHEP::keV  <<G4endl;
-#if 0
-		if (track->GetParentID() == 1) { //figlio di Sr
-			if (debug) G4cout<<"DEBUG Sr Setto il MotherIsotope a 0"<<G4endl;
-			runStackAction->SetMotherIsotope(0);
-			(runStackAction->GetRunEnGen()).push_back(track->GetKineticEnergy()/CLHEP::keV);
-			(runStackAction->GetRunIsotopeGen()).push_back(0);
-			(runStackAction->GetRunCosX()).push_back(track->GetMomentumDirection().x());
-			(runStackAction->GetRunCosY()).push_back(track->GetMomentumDirection().y());
-			(runStackAction->GetRunCosZ()).push_back(track->GetMomentumDirection().z());
-		} else if (track->GetParentID() == 2) {  //figlio di Y
-			if (debug) G4cout<<"DEBUG Y Setto il MotherIsotope a 1"<<G4endl;
-			runStackAction->SetMotherIsotope(1);
-			(runStackAction->GetRunEnGen()).push_back(track->GetKineticEnergy()/CLHEP::keV);
-			(runStackAction->GetRunIsotopeGen()).push_back(1);
-			(runStackAction->GetRunCosX()).push_back(track->GetMomentumDirection().x());
-			(runStackAction->GetRunCosY()).push_back(track->GetMomentumDirection().y());
-			(runStackAction->GetRunCosZ()).push_back(track->GetMomentumDirection().z());
-		}
-#endif
+
 	}
 	
-	if (track->GetDynamicParticle() ->GetPDGcode()>10000) {
+	if (track->GetDynamicParticle() ->GetPDGcode()>10000) {  //if I generated a Heavy Ion
 		
-		if (CreatorProcname=="protonInelastic") {
-			if (debug) G4cout<<"DEBUG vuoto il vettore! Figlio di "<< track->GetDynamicParticle() ->GetPDGcode() <<G4endl;
+		if (CreatorProcname=="protonInelastic" || CreatorProcname=="neutronInelastic" ) { //If the heavy ion was generated due to protonInelastic process, dump to root file all relevant informations about the gammas that were generated with it
+			if (debug) G4cout<<"DEBUG  "<< track->GetDynamicParticle() ->GetPDGcode() <<G4endl;
 			for (size_t aa=0; aa<GammaStoreEne.size(); aa++) {
 				if (debug) G4cout<<GammaStoreEne.at(aa)<<G4endl;
 				runStackAction->AddExitGammaEne(GammaStoreEne.at(aa));
@@ -135,10 +119,12 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 				runStackAction->AddRunCosY(GammaStoreCY.at(aa));
 				runStackAction->AddRunCosZ(GammaStoreCZ.at(aa));
 				runStackAction->AddRunVolume(GammaStoreVolume.at(aa));
+				runStackAction->AddExitProEne(track->GetKineticEnergy()/CLHEP::MeV);
 
 				
 				
 			}
+			//then free the vectors
 			GammaStoreEne.clear();
 			GammaStoreX.clear();
 			GammaStoreY.clear();
@@ -147,6 +133,7 @@ B1StackingAction::ClassifyNewTrack(const G4Track* track)
 			GammaStoreCY.clear();
 			GammaStoreCZ.clear();
 			GammaStoreVolume.clear();
+//			GammaStoreEnePro.clear();
 		
 		}
 	}

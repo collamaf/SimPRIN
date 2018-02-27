@@ -61,6 +61,7 @@ private:
 	std::vector<G4double> GammaStoreCY;
 	std::vector<G4double> GammaStoreCZ;
 	std::vector<G4int> GammaStoreVolume;
+//	std::vector<G4double> GammaStoreEnePro;
 
 
 };
